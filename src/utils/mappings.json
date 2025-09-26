@@ -1,0 +1,259 @@
+{
+    "CAT_PROD.DBF": {
+        "fields": {
+                "clave":{
+                    "dbf": "CLAVE",
+                    "type": "string",
+                    "enabled":1
+                },
+                "prod_desc":{
+                    "dbf": "PROD_DESCR",
+                    "type": "string",
+                    "enabled":1
+                },
+                "prod_exist":{
+                    "dbf": "PROD_EXIST",
+                    "type": "number",
+                    "enabled":1
+                },
+                "prod_lis10":{
+                    "dbf": "PROD_LIS10",
+                    "type": "number",
+                    "enabled":1
+                },
+                "prod_unmed":{
+                    "dbf": "PROD_UNMED",
+                    "type": "string",
+                    "enabled":1
+                },
+                "prov_clave":{
+                    "dbf": "PROV_CLAVE",
+                    "type": "string",
+                    "enabled":1
+                },
+                "cdeslarga":{
+                    "dbf": "CDESLARGA",
+                    "type": "string",
+                    "enabled":1
+                },
+                "barcode":{
+                    "dbf": "BARCODE",
+                    "type": "string",
+                    "enabled":1
+                },
+                "Familia":{
+                    "dbf": "FAMILIA",
+                    "type": "string",
+                    "enabled":1
+                },
+                "subfam":{
+                    "dbf": "SUBFAM",
+                    "type": "string",
+                    "enabled":1
+                },
+                "prod_prome":{
+                    "dbf": "PROD_PROME",
+                    "type": "number",
+                    "enabled":1
+                }
+            }
+    },
+    "VENTA.DBF": {
+        "fields": {
+            "TIPO_DOC":{
+                    "dbf": "TIPO_DOC",
+                    "type": "string",
+                    "enabled":1
+            },
+            "NO_REFEREN":{
+                    "dbf": "NO_REFEREN",
+                    "type": "number",
+                    "enabled":1
+                },
+            "CLAVE_CLI":{
+                    "dbf": "CLAVE_CLI",
+                    "type": "string",
+                    "enabled":1
+            },
+            "CLAVE_VEND":{
+                    "dbf": "CLAVE_VEND",
+                    "type": "number",
+                    "enabled":1
+            },
+            "F_EMISION":{
+                    "dbf": "F_EMISION",
+                    "type": "string",
+                    "enabled":1
+            },
+            "TOTAL_BRUT":{
+                    "dbf": "TOTAL_BRUT",
+                    "type": "number",
+                    "enabled":1
+            },
+            "MODHORA":{
+                    "dbf": "MODHORA",
+                    "type": "string",
+                    "enabled":1
+            },
+            "CCON_CXC":{
+                    "dbf": "CCON_CXC",
+                    "type": "string",
+                    "enabled":1
+            },
+            "FORMAPAG":{
+                    "dbf": "FORMAPAG",
+                    "type": "string",
+                    "enabled":1
+            },
+            "CAMPO1":{
+                    "dbf": "CAMPO1",
+                    "type": "string",
+                    "enabled":1
+            }
+        }
+    },
+    "PARTVTA.DBF": {
+        "fields": {
+            "NO_REFEREN":{
+                    "dbf": "NO_REFEREN",
+                    "type": "number",
+                    "enabled":1
+            },
+            "CLAVE_ART":{
+                    "dbf": "CLAVE_ART",
+                    "type": "string",
+                    "enabled":1
+            },
+            "subfam":{
+                    "dbf": "SUBFAM",
+                    "type": "string",
+                    "enabled":1
+            },
+            "CANTIDAD":{
+                    "dbf": "CANTIDAD",
+                    "type": "number",
+                    "enabled":1
+            },
+            "PRECIO_UNI":{
+                    "dbf": "PRECIO_UNI",
+                    "type": "number",
+                    "enabled":1
+            },
+            "DESCUENTO":{
+                    "dbf": "DESCUENTO",
+                    "type": "number",
+                    "enabled":1
+            },
+            "NO_IMPUES1":{
+                    "dbf": "NO_IMPUES1",
+                    "type": "string",
+                    "enabled":1
+            },
+            "IMPXPART":{
+                "dbf": "IMPXPART",
+                "type": "string",
+                "enabled":1
+            },
+            "IVAXPART":{
+                "dbf": "IVAXPART",
+                "type": "string",
+                "enabled":1
+            },
+            "NPRECILIS":{
+                "dbf": "NPRECILIS",
+                "type": "string",
+                "enabled":1
+            },
+            "NDESCTO1":{
+                "dbf": "NDESCTO1",
+                "type": "number",
+                "enabled":1
+            },
+            "NDESCTO2":{
+                "dbf": "NDESCTO2",
+                "type": "number",
+                "enabled":1
+            }
+        }
+    },
+    "FLUJORES.DBF": {
+        "fields": {
+            "FECHA":{
+                    "dbf": "FECHA",
+                    "type": "string",
+                    "enabled":1
+            },
+            "REF_NUM":{
+                    "dbf": "REF_NUM",
+                    "type": "number",
+                    "enabled":1
+            },
+            "IMPORTE":{
+                    "dbf": "IMPORTE",
+                    "type": "number",
+                    "enabled":1
+            },
+            "CVE_CON":{
+                    "dbf": "CVE_CON",
+                    "type": "string",
+                    "enabled":1
+            },
+            "TIENDA":{
+                    "dbf": "TIENDA",
+                    "type": "string",
+                    "enabled":1
+            },
+            "REF_TIPO":{
+                    "dbf": "REF_TIPO",
+                    "type": "string",
+                    "enabled":1
+            },
+            "HORA":{
+                    "dbf": "HORA",
+                    "type": "string",
+                    "enabled":1
+            }
+        }
+    },
+    "FLUJO01.DBF": {
+        "fields": {
+            "FECHA":{
+                    "dbf": "FECHA",
+                    "type": "string",
+                    "enabled":1
+            },
+            "REF_NUM":{
+                    "dbf": "REF-NUM",
+                    "type": "number",
+                    "enabled":1
+            },
+            "IMPORTE":{
+                    "dbf": "IMPORTE",
+                    "type": "number",
+                    "enabled":1
+            },
+            "CVE_CON":{
+                    "dbf": "CVE_CON",
+                    "type": "string",
+                    "enabled":1
+            },
+            "TIENDA":{
+                    "dbf": "TIENDA",
+                    "type": "string",
+                    "enabled":1
+            },
+            "REF_TIPO":{
+                    "dbf": "REF_TIPO",
+                    "type": "string",
+                    "enabled":1
+            },
+            "HORA":{
+                    "dbf": "HORA",
+                    "type": "string",
+                    "enabled":1
+            }
+        }
+    }
+
+}
+    
