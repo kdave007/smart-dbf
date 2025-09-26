@@ -62,7 +62,7 @@ def test_with_custom_args(data_source, password, date_from=None, date_to=None, t
             filtered_data = controller.get_table_data(
                 table_name=table_name,
                 date_range={"from": date_from, "to": date_to},
-                limit=5
+                limit=None
             )
             print(f"Found {len(filtered_data)} records")
             for i, record in enumerate(filtered_data, 1):
@@ -83,9 +83,9 @@ if __name__ == "__main__":
     test_with_custom_args(
         data_source=data_src,
         password="X3WGTXG5QJZ6K9ZC4VO2",  # ← Replace with your real password
-        date_from="2025-09-01",  # Changed to match your actual data date
-        date_to="2025-09-01",
-        table_name="VENTA",
+        date_from="2025-09-24",  # Changed to match your actual data date
+        date_to="2025-09-25",
+        table_name="CANOTA",
         dll_path=r"C:\Users\campo\Documents\projects\smart-dbf\Advantage.Data.Provider.dll",
     )
     

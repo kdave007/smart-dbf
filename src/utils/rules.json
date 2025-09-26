@@ -49,16 +49,29 @@
     "CANOTA": {
         "filters": {
             "date": {
-                "field": "FECHA_REG",
-                "format": "%d/%m/%Y"
+                "field": "NOTA_FECHA",
+                "format": "%m-%d-%Y",
+                "enabled":1
+            },
+            "value":{
+                "field": "NOTA_FOLIO",
+                "condition":"equal",
+                "enabled":0
             }
-        }
+        },
+        "schema_approach":"simple"
     },
     "CUNOTA": {
         "filters": {
             "date": {
-                "field": "FECHA_REG",
-                "format": "%d/%m/%Y"
+                "field": "",
+                "format": "%d/%m/%Y",
+                "enabled":1
+            },
+            "value":{
+                "field": "NOTA_FOLIO",
+                "condition":"equal",
+                "enabled":0
             }
         }
     },
