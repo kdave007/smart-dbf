@@ -11,7 +11,7 @@ dll_path = r"C:\Users\campo\Documents\projects\smart-dbf\Advantage.Data.Provider
 dbf_path = "C:/Users/campo/Documents/dbf_encriptados/pospcp"  # Replace with actual path
 password = "X3WGTXG5QJZ6K9ZC4VO2"      # Replace with actual password
 
-simple = Simple(dbf_path, password, dll_path=dll_path)
+simple = Simple(dbf_path, password, dll_path=dll_path, encrypted=True)
 
 # Filter by NO_REFEREN = '287732'
 results = simple.get_table_data("VENTA", value_filters={"NO_REFEREN": "287732"})

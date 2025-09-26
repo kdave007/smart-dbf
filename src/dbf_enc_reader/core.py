@@ -8,17 +8,18 @@ from .connection import DBFConnection
 from .converters import DataConverter
 
 class DBFReader:
-    def __init__(self, data_source: str, encryption_password: str):
+    def __init__(self, data_source: str, encryption_password: str = None, encrypted: bool = True):
         """
         Initialize DBF reader with connection parameters.
         
         Args:
             data_source: Path to the DBF file
-            encryption_password: Password for encrypted DBF
+            encryption_password: Password for encrypted DBF (optional if not encrypted)
+            encrypted: Whether the DBF files are encrypted
         """
         # Log the data source path being used
         logging.info(f"Initializing DBFReader with data source: {data_source}")
-        self.connection = DBFConnection(data_source, encryption_password)
+        self.connection = DBFConnection(data_source, encryption_password, encrypted)
         self.converter = DataConverter()
 
     def read_table(self, table_name: str, limit: Optional[int] = None, filters: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, Any]]:

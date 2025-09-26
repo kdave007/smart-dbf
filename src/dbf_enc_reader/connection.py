@@ -71,20 +71,18 @@ class DBFConnection:
                 "Advantage DLL path not set. Call DBFConnection.set_dll_path() first with the path to Advantage.Data.Provider.dll"
             )
 
-    def __init__(self, data_source: str, encryption_password: str):
+    def __init__(self, data_source: str, encryption_password: str = None, encrypted: bool = True):
         """
         Initialize DBF connection.
         
         Args:
             data_source: Path to the DBF file
-            encryption_password: Password for encrypted DBF
+            encryption_password: Password for encrypted DBF (optional if not encrypted)
+            encrypted: Whether the DBF files are encrypted
         """
         # Use the data source path directly without resolving it
         self.data_source = data_source
         # logging.info(f"Using data source path: {self.data_source}")
-        
-        # Simple encryption flag - assume encrypted by default
-        encrypted = True  # You can make this configurable later
         
         # Check if the data source path exists
         if not os.path.exists(self.data_source):

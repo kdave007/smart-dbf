@@ -5,12 +5,12 @@
                 "field": "F_EMISION",
                 "format": "%m/%d/%Y",
                 "condition":"between",
-                "enabled":0
+                "enabled":1
             },
             "value":{
                 "field": "NO_REFEREN",
                 "condition":"equal",
-                "enabled":1
+                "enabled":0
             }
         }
     },
@@ -39,6 +39,30 @@
         }
     },
     "CLIENTES": {
+        "filters": {
+            "date": {
+                "field": "FECHA_REG",
+                "format": "%d/%m/%Y"
+            }
+        }
+    },
+    "CANOTA": {
+        "filters": {
+            "date": {
+                "field": "FECHA_REG",
+                "format": "%d/%m/%Y"
+            }
+        }
+    },
+    "CUNOTA": {
+        "filters": {
+            "date": {
+                "field": "FECHA_REG",
+                "format": "%d/%m/%Y"
+            }
+        }
+    },
+    "XCORTE": {
         "filters": {
             "date": {
                 "field": "FECHA_REG",

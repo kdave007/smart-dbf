@@ -38,7 +38,8 @@ def test_with_custom_args(data_source, password, date_from=None, date_to=None, t
             encryption_password=password,
             mapping_file_path=str(mappings_path),
             dll_path=dll_path,
-            filters_file_path=str(rules_path)
+            filters_file_path=str(rules_path),
+            encrypted=False
         )
         
         # Show table info
@@ -76,15 +77,16 @@ def test_with_custom_args(data_source, password, date_from=None, date_to=None, t
 
 if __name__ == "__main__":
     print("=== Simple DBF Controller Test ===")
-    
+    enc_data_src = r"C:\Users\campo\Documents\dbf_encriptados\pospcp"
+    data_src = r"C:\Users\campo\Documents\projects\data_sucursales\arauc"
   
     test_with_custom_args(
-        data_source=r"C:\Users\campo\Documents\dbf_encriptados\pospcp",
+        data_source=data_src,
         password="X3WGTXG5QJZ6K9ZC4VO2",  # ← Replace with your real password
-        date_from="2025-04-30",  # Changed to match your actual data date
-        date_to="2025-04-30",
+        date_from="2025-09-01",  # Changed to match your actual data date
+        date_to="2025-09-01",
         table_name="VENTA",
-        dll_path=r"C:\Users\campo\Documents\projects\smart-dbf\Advantage.Data.Provider.dll"
+        dll_path=r"C:\Users\campo\Documents\projects\smart-dbf\Advantage.Data.Provider.dll",
     )
     
     print("\n📝 Instructions:")
