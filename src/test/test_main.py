@@ -52,6 +52,7 @@ def test_with_custom_args(data_source, password, date_from=None, date_to=None, t
         
         # Test without date filter first
         print(f"\n=== Sample records from {table_name} (no filter) ===")
+        
         sample_data = controller.get_table_data(table_name=table_name, limit=2)
         for i, record in enumerate(sample_data, 1):
             print(f"Record {i}: {record}")
@@ -88,7 +89,3 @@ if __name__ == "__main__":
         table_name="CANOTA",
         dll_path=r"C:\Users\campo\Documents\projects\smart-dbf\Advantage.Data.Provider.dll",
     )
-    
-    print("\n📝 Instructions:")
-    print("1. Update the data_source and encryption_password variables")
-    print("2. Uncomment the test function you want to run")
