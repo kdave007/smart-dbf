@@ -15,12 +15,11 @@
         }
     },
     "PARTVTA": {
-        "filters": {
-            "date": {
-                "field": "F_EMISION",
-                "format": "%d/%m/%Y"
+        "value":{
+                "field": "NO_REFEREN",
+                "condition":"equal",
+                "enabled":1
             }
-        }
     },
     "VALES": {
         "filters": {

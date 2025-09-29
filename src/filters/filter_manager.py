@@ -87,14 +87,32 @@ class FilterManager:
         print(f"[DEBUG] Building date filter: field={date_field}, format={date_format}, condition={condition}")
         
         try:
+            # Keep both ISO and display-formatted versions
+            from_iso = datetime.strptime(date_range['from'], '%Y-%m-%d').strftime('%Y-%m-%d')
+            to_iso = datetime.strptime(date_range['to'], '%Y-%m-%d').strftime('%Y-%m-%d')
             from_date = datetime.strptime(date_range['from'], '%Y-%m-%d').strftime(date_format)
             to_date = datetime.strptime(date_range['to'], '%Y-%m-%d').strftime(date_format)
             print(f"[DEBUG] Date filter: {from_date} to {to_date}")
             
             if condition == "between":
-                return [{"field": date_field, "operator": "range", "from_value": from_date, "to_value": to_date}]
+                return [{
+                    "field": date_field,
+                    "operator": "range",
+                    "from_value": from_date,
+                    "to_value": to_date,
+                    "is_date": True,
+                    "from_iso": from_iso,
+                    "to_iso": to_iso
+                }]
             elif condition == "equal":
-                return [{"field": date_field, "operator": "=", "value": from_date}]
+                return [{
+                    "field": date_field,
+                    "operator": "=",
+                    "value": from_date,
+                    "is_date": True,
+                    "from_iso": from_iso,
+                    "to_iso": to_iso
+                }]
                 
         except ValueError as e:
             print(f"[DEBUG] Date conversion error: {e}")

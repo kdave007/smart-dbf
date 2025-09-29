@@ -39,7 +39,7 @@ def test_with_custom_args(data_source, password, date_from=None, date_to=None, t
             mapping_file_path=str(mappings_path),
             dll_path=dll_path,
             filters_file_path=str(rules_path),
-            encrypted=False
+            encrypted=True
         )
         
         # Show table info
@@ -67,7 +67,7 @@ def test_with_custom_args(data_source, password, date_from=None, date_to=None, t
             )
             print(f"Found {len(filtered_data)} records")
             for i, record in enumerate(filtered_data, 1):
-                print(f"Record {i}: {record}")
+                print(f"Record {i}: {record.get('NO_REFEREN')} - index = {record.get('__meta')}")
         else:
             print(f"\nNo date filter applied.")
         
@@ -82,10 +82,10 @@ if __name__ == "__main__":
     data_src = r"C:\Users\campo\Documents\projects\data_sucursales\arauc"
   
     test_with_custom_args(
-        data_source=data_src,
+        data_source=enc_data_src,
         password="X3WGTXG5QJZ6K9ZC4VO2",  # ← Replace with your real password
-        date_from="2025-09-24",  # Changed to match your actual data date
-        date_to="2025-09-25",
-        table_name="CANOTA",
+        date_from="2025-01-01",  # Changed to match your actual data date
+        date_to="2025-04-30",
+        table_name="VENTA",
         dll_path=r"C:\Users\campo\Documents\projects\smart-dbf\Advantage.Data.Provider.dll",
     )

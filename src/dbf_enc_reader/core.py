@@ -22,31 +22,33 @@ class DBFReader:
         self.connection = DBFConnection(data_source, encryption_password, encrypted)
         self.converter = DataConverter()
 
-    def read_table(self, table_name: str, limit: Optional[int] = None, filters: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, Any]]:
+    def read_table(self, table_name: str, limit: Optional[int] = None, filters: Optional[List[Dict[str, Any]]] = None, include_recno: bool = True) -> List[Dict[str, Any]]:
         """Read records from a table with optional filters.
         
         Args:
             table_name: Name of the table to read
             limit: Optional limit on number of records to read
             filters: Optional list of filter conditions
+            include_recno: When True, include physical record number as metadata using RECNO()
             
         Returns:
-            List of records as dictionaries
+            List of records as dictionaries. When include_recno=True, each record will contain a
+            "__meta" key with {"recno": <int>}.
         """
         results = []
         with self.connection as conn:
             from System.Data import CommandType
             
-            # Create command with TableDirect for better performance
+            # Always use TableDirect for compatibility with encrypted/local tables
             cmd = conn.conn.CreateCommand()
             cmd.CommandType = CommandType.TableDirect
             cmd.CommandText = table_name
             cmd.AdsOptimizedFilters = True  # Enable AOF for better performance
-            
-            # Get reader
+
+            # Get Advantage Extended Reader
             reader = cmd.ExecuteExtendedReader()
-            
-            # Apply filters if any
+
+            # Apply filters if any via AOF
             if filters:
                 filter_conditions = []
                 use_or = len(filters) > 1 and all(f['field'] == filters[0]['field'] for f in filters)
@@ -55,12 +57,11 @@ class DBFReader:
                     print(f' filter ////// {f}')
                     if f['operator'] == 'range':
                         filter_conditions.append(
-                            f"{f['field']} >= '{f['from_value']}' AND "
-                            f"{f['field']} <= '{f['to_value']}'"
+                            f"{f['field']} >= '{f['from_value']}' AND {f['field']} <= '{f['to_value']}'"
                         )
                     else:
                         filter_conditions.append(
-                            f"{f['field']}{f['operator']} '{f['value']}'"
+                            f"{f['field']}{f['operator']} '{f.get('value', '')}'"
                         )
 
                 print(f'HERE ------ {filter_conditions}')        
@@ -76,23 +77,48 @@ class DBFReader:
                         print(f"\nFilter error: {str(e)}")
                         print(f"Filter expression: {filter_expr}")
                         raise
-            
-            # Process results
+
+            # Process results and attach physical identifier metadata when requested
             count = 0
             while reader.Read():
-               
                 if limit and count >= limit:
                     break
-                    
+
                 record = {}
                 for i in range(reader.FieldCount):
                     field_name = reader.GetName(i)
                     value = reader.GetValue(i)
                     record[field_name] = self.converter.convert_value(value)
-                 
+
+                if include_recno:
+                    # Try to obtain Advantage extended reader physical identifiers
+                    recno_val = None
+                    rowid_hex = None
+                    try:
+                        # Some providers expose RecordNumber on the extended reader
+                        if hasattr(reader, 'RecordNumber'):
+                            recno_val = int(reader.RecordNumber)
+                    except Exception:
+                        recno_val = None
+                    try:
+                        # Bookmark is a stable binary identifier; attach as hex if available
+                        if hasattr(reader, 'Bookmark'):
+                            bm = reader.Bookmark
+                            if bm is not None:
+                                rowid_hex = bm.ToString() if hasattr(bm, 'ToString') else (bm.hex() if hasattr(bm, 'hex') else str(bm))
+                    except Exception:
+                        rowid_hex = None
+
+                    meta = {}
+                    if recno_val is not None:
+                        meta['recno'] = recno_val
+                    if rowid_hex is not None:
+                        meta['rowid'] = rowid_hex
+                    if meta:
+                        record['__meta'] = meta
+
                 results.append(record)
                 count += 1
-            
             return results
             
 
