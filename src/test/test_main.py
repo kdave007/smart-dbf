@@ -41,7 +41,7 @@ def test_with_custom_args(data_source, password, date_from=None, date_to=None, t
             mapping_file_path=str(mappings_path),
             dll_path=dll_path,
             filters_file_path=str(rules_path),
-            encrypted=True
+            encrypted=False
         )
         
         # Show table info
@@ -89,10 +89,10 @@ if __name__ == "__main__":
     data_src = r"C:\Users\campo\Documents\projects\data_sucursales\arauc"
   
     test_with_custom_args(
-        data_source=enc_data_src,
+        data_source=data_src,
         password="X3WGTXG5QJZ6K9ZC4VO2",  # ← Replace with your real password
-        date_from="01-01-2025",  # Changed to match your actual data date
+        date_from="09-01-2025",  # Changed to match your actual data date
         date_to="09-30-2025",
-        table_name="VENTA",
+        table_name="CANOTA",
         dll_path=r"C:\Users\campo\Documents\projects\smart-dbf\Advantage.Data.Provider.dll",
     )

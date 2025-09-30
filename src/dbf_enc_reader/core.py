@@ -65,7 +65,7 @@ class DBFReader:
                             f"{f['field']} {f['operator']} '{f.get('value', '')}'"
                         )
 
-                # print(f'HERE ------ {filter_conditions}')        
+                print(f'HERE ------ {filter_conditions}')        
                 
                 if filter_conditions:
                     join_op = " OR " if use_or else " AND "
@@ -101,6 +101,8 @@ class DBFReader:
                     for field_name, index in field_indices.items():
                         try:
                             value = reader.GetValue(index)
+                            if isinstance(value, str):
+                                value = value.strip()
                             record[field_name] = self.converter.convert_value(value)
                         except Exception:
                             # Skip if field can't be read

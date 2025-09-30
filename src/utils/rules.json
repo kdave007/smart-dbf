@@ -6,11 +6,6 @@
                 "format": "%m/%d/%Y",
                 "condition":"between",
                 "enabled":1
-            },
-            "value":{
-                "field": "NO_REFEREN",
-                "condition":"equal",
-                "enabled":0
             }
         },
         "strategy":"simple"
@@ -23,7 +18,13 @@
                     "enabled":1
                 }
         },    
-        "composed_parent": { "all": false, "matching_field": ["NO_REFEREN"], "fields":["NO_REFEREN"], "related_table": "VENTA" }
+        "composed_parent": { 
+            "all": false, 
+            "matching_field": ["NO_REFEREN"], 
+            "fields":["NO_REFEREN"],
+            "related_table": "VENTA" 
+        },
+         "strategy":"composed"
     },
     "VALES": {
         "filters": {
@@ -53,30 +54,28 @@
         "filters": {
             "date": {
                 "field": "NOTA_FECHA",
-                "format": "%m-%d-%Y",
+                "format": "%m/%d/%Y",
+                "condition":"between",
                 "enabled":1
-            },
-            "value":{
-                "field": "NOTA_FOLIO",
-                "condition":"equal",
-                "enabled":0
             }
         },
         "schema_approach":"simple"
     },
     "CUNOTA": {
         "filters": {
-            "date": {
-                "field": "NOTA_FECHA",
-                "format": "%d/%m/%Y",
-                "enabled":1
-            },
             "value":{
                 "field": "NOTA_FOLIO",
-                "condition":"equal",
-                "enabled":0
+                "condition":"contains",
+                "enabled":1
             }
-        }
+        },
+        "composed_parent": { 
+            "all": false, 
+            "matching_field": ["NOTA_FOLIO"],
+             "fields":["NOTA_FOLIO"], 
+             "related_table": "CANOTA" 
+            },
+        "strategy":"composed"
     },
     "XCORTE": {
         "filters": {

@@ -132,6 +132,7 @@ class FilterManager:
                     "from_iso": from_iso,
                     "to_iso": to_iso
                 }]
+            
                 
         except ValueError as e:
             print(f"[DEBUG] Date conversion error: {e}")
