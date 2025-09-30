@@ -22,7 +22,7 @@ class DBFReader:
         self.connection = DBFConnection(data_source, encryption_password, encrypted)
         self.converter = DataConverter()
 
-    def read_table(self, table_name: str, limit: Optional[int] = None, filters: Optional[List[Dict[str, Any]]] = None, include_recno: bool = True) -> List[Dict[str, Any]]:
+    def read_table(self, table_name: str, limit: Optional[int] = None, filters: Optional[List[Dict[str, Any]]] = None, include_recno: bool = True, select_fields: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         """Read records from a table with optional filters.
         
         Args:
@@ -30,6 +30,7 @@ class DBFReader:
             limit: Optional limit on number of records to read
             filters: Optional list of filter conditions
             include_recno: When True, include physical record number as metadata using RECNO()
+            select_fields: Optional list of field names to include. If None, all fields are returned.
             
         Returns:
             List of records as dictionaries. When include_recno=True, each record will contain a
@@ -54,17 +55,17 @@ class DBFReader:
                 use_or = len(filters) > 1 and all(f['field'] == filters[0]['field'] for f in filters)
                 
                 for f in filters:
-                    print(f' filter ////// {f}')
+                    # print(f' filter ////// {f}')
                     if f['operator'] == 'range':
                         filter_conditions.append(
                             f"{f['field']} >= '{f['from_value']}' AND {f['field']} <= '{f['to_value']}'"
                         )
                     else:
                         filter_conditions.append(
-                            f"{f['field']}{f['operator']} '{f.get('value', '')}'"
+                            f"{f['field']} {f['operator']} '{f.get('value', '')}'"
                         )
 
-                print(f'HERE ------ {filter_conditions}')        
+                # print(f'HERE ------ {filter_conditions}')        
                 
                 if filter_conditions:
                     join_op = " OR " if use_or else " AND "
@@ -78,6 +79,16 @@ class DBFReader:
                         print(f"Filter expression: {filter_expr}")
                         raise
 
+            # Pre-compute field indices if select_fields is specified
+            field_indices = {}
+            if select_fields:
+                for field in select_fields:
+                    try:
+                        field_indices[field] = reader.GetOrdinal(field)
+                    except Exception:
+                        # Field doesn't exist in table, skip it
+                        pass
+
             # Process results and attach physical identifier metadata when requested
             count = 0
             while reader.Read():
@@ -85,10 +96,21 @@ class DBFReader:
                     break
 
                 record = {}
-                for i in range(reader.FieldCount):
-                    field_name = reader.GetName(i)
-                    value = reader.GetValue(i)
-                    record[field_name] = self.converter.convert_value(value)
+                if select_fields and field_indices:
+                    # Only read specified fields using pre-computed indices
+                    for field_name, index in field_indices.items():
+                        try:
+                            value = reader.GetValue(index)
+                            record[field_name] = self.converter.convert_value(value)
+                        except Exception:
+                            # Skip if field can't be read
+                            pass
+                else:
+                    # Read all fields (current behavior)
+                    for i in range(reader.FieldCount):
+                        field_name = reader.GetName(i)
+                        value = reader.GetValue(i)
+                        record[field_name] = self.converter.convert_value(value)
 
                 if include_recno:
                     # Try to obtain Advantage extended reader physical identifiers

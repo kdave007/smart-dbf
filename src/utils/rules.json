@@ -20,10 +20,10 @@
             "value":{
                     "field": "NO_REFEREN",
                     "condition":"equal",
-                    "enabled":0
+                    "enabled":1
                 }
         },    
-        "strategy":"composed"
+        "composed_parent": { "all": false, "matching_field": ["NO_REFEREN"], "fields":["NO_REFEREN"], "related_table": "VENTA" }
     },
     "VALES": {
         "filters": {

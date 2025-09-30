@@ -57,7 +57,7 @@ class Simple:
             print(f"Error parsing mapping file: {e}")
             return {}
     
-    def read_dbf_table(self, table_name: str, limit: Optional[int] = None, filters: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, Any]]:
+    def read_dbf_table(self, table_name: str, limit: Optional[int] = None, filters: Optional[List[Dict[str, Any]]] = None, select_fields: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         """
         Simple method to read DBF table data
         
@@ -65,12 +65,13 @@ class Simple:
             table_name: Name of the table to read
             limit: Optional limit on number of records
             filters: Optional list of filter conditions
+            select_fields: Optional list of field names to include. If None, all fields are returned.
             
         Returns:
             List of records as dictionaries
         """
         reader = DBFReader(self.data_source, self.encryption_password, self.encrypted)
-        return reader.read_table(table_name, limit, filters)
+        return reader.read_table(table_name, limit, filters, select_fields=select_fields)
     
     def get_table_info(self, table_name: str) -> Dict[str, Any]:
         """
@@ -85,7 +86,7 @@ class Simple:
         reader = DBFReader(self.data_source, self.encryption_password, self.encrypted)
         return reader.get_table_info(table_name)
     
-    def get_table_data(self, table_name: str, limit: Optional[int] = None, date_range: Optional[Dict[str, str]] = None, value_filters: Optional[Dict[str, str]] = None) -> List[Dict[str, Any]]:
+    def get_table_data(self, table_name: str, limit: Optional[int] = None, date_range: Optional[Dict[str, str]] = None, value_filters: Optional[Dict[str, str]] = None, select_fields: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         """
         Get table data with optional filtering based on rules configuration
         
@@ -94,12 +95,13 @@ class Simple:
             limit: Optional limit on number of records
             date_range: Optional date range filter with 'from' and 'to' keys
             value_filters: Optional value filters dict with field names as keys
+            select_fields: Optional list of field names to include. If None, all fields are returned.
             
         Returns:
             List of records as dictionaries
         """
         filters = self.filter_manager.build_filters(table_name, date_range, value_filters)
-        return self.read_dbf_table(table_name, limit, filters)
+        return self.read_dbf_table(table_name, limit, filters, select_fields)
     
     # Filter-related methods now delegated to FilterManager
     def get_filter_config(self, table_name: str, filter_type: str = "date") -> Dict[str, Any]:

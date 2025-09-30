@@ -11,9 +11,7 @@ from src.tables_schemas.composed import Composed
 def test_composed_get_table_data(
     data_source,
     password,
-    parent_table,
-    child_table,
-    matching_field,
+    table,
     dll_path=None,
     encrypted=True,
     date_from=None,  
@@ -50,14 +48,11 @@ def test_composed_get_table_data(
         )
 
         print("\n=== Composed.get_table_data call ===")
-        print(f"Main table: {parent_table}")
-        print(f"Related table: {child_table}")
-        print(f"Matching field: {matching_field}")
+        print(f"Main table: {table}")
+
 
         data = controller.get_table_data(
-            parent_table=parent_table,
-            child_table=child_table,
-            matching_field=matching_field,
+            table = table,
             date_range={"from": date_from, "to": date_to},
             limit=None
         )
@@ -84,11 +79,9 @@ if __name__ == "__main__":
     test_composed_get_table_data(
         data_source=data_src,
         password="X3WGTXG5QJZ6K9ZC4VO2",  # ← Replace with your real password
-        parent_table="VENTA",               # main table you want to explore
-        child_table="PARTVTA",           # related/reference table
-        matching_field="NUM_REF",         # example matching field name
+        table="PARTVTA",               # main table you want to explore
         dll_path=r"C:\Users\campo\Documents\projects\smart-dbf\Advantage.Data.Provider.dll",
         encrypted=False,
-        date_from="2025-09-24",  # Changed to match your actual data date
+        date_from="2025-01-01",  # Changed to match your actual data date
         date_to="2025-09-25"
     )
