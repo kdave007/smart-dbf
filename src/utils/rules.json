@@ -12,14 +12,18 @@
                 "condition":"equal",
                 "enabled":0
             }
-        }
+        },
+        "strategy":"simple"
     },
     "PARTVTA": {
-        "value":{
-                "field": "NO_REFEREN",
-                "condition":"equal",
-                "enabled":1
-            }
+        "filters": {
+            "value":{
+                    "field": "NO_REFEREN",
+                    "condition":"equal",
+                    "enabled":0
+                }
+        },    
+        "strategy":"composed"
     },
     "VALES": {
         "filters": {
@@ -63,7 +67,7 @@
     "CUNOTA": {
         "filters": {
             "date": {
-                "field": "",
+                "field": "NOTA_FECHA",
                 "format": "%d/%m/%Y",
                 "enabled":1
             },

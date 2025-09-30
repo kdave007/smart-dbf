@@ -11,8 +11,8 @@ from src.tables_schemas.composed import Composed
 def test_composed_get_table_data(
     data_source,
     password,
-    table_name,
-    related_table,
+    parent_table,
+    child_table,
     matching_field,
     dll_path=None,
     encrypted=True,
@@ -50,13 +50,13 @@ def test_composed_get_table_data(
         )
 
         print("\n=== Composed.get_table_data call ===")
-        print(f"Main table: {table_name}")
-        print(f"Related table: {related_table}")
+        print(f"Main table: {parent_table}")
+        print(f"Related table: {child_table}")
         print(f"Matching field: {matching_field}")
 
         data = controller.get_table_data(
-            table_name=table_name,
-            related_table=related_table,
+            parent_table=parent_table,
+            child_table=child_table,
             matching_field=matching_field,
             date_range={"from": date_from, "to": date_to},
             limit=None
@@ -64,8 +64,8 @@ def test_composed_get_table_data(
 
         if isinstance(data, list):
             print(f"Returned {len(data)} reference records")
-            for i, row in enumerate(data[:3], 1):
-                print(f"Ref {i}: {row}")
+            for i, row in enumerate(data[:], 1):
+                print(f"Ref {row.get('NO_REFEREN')}: {row.get('__meta')}")
         else:
             print("Returned:", data)
 
@@ -82,10 +82,10 @@ if __name__ == "__main__":
     data_src = r"C:\\Users\\campo\\Documents\\projects\\data_sucursales\\arauc"
 
     test_composed_get_table_data(
-        data_source=enc_data_src,
+        data_source=data_src,
         password="X3WGTXG5QJZ6K9ZC4VO2",  # ← Replace with your real password
-        table_name="VENTA",               # main table you want to explore
-        related_table="PARTVTA",           # related/reference table
+        parent_table="VENTA",               # main table you want to explore
+        child_table="PARTVTA",           # related/reference table
         matching_field="NUM_REF",         # example matching field name
         dll_path=r"C:\Users\campo\Documents\projects\smart-dbf\Advantage.Data.Provider.dll",
         encrypted=False,

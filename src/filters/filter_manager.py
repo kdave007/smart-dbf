@@ -87,11 +87,30 @@ class FilterManager:
         print(f"[DEBUG] Building date filter: field={date_field}, format={date_format}, condition={condition}")
         
         try:
+            # Parse user-provided dates in multiple common formats and normalize
+            def _parse_any(d: str) -> datetime:
+                candidates = [
+                    "%Y-%m-%d",  # 2025-09-25
+                    "%d-%m-%Y",  # 25-09-2025
+                    "%m-%d-%Y",  # 09-25-2025
+                    "%d/%m/%Y",  # 25/09/2025
+                    "%m/%d/%Y",  # 09/25/2025
+                ]
+                for fmt in candidates:
+                    try:
+                        return datetime.strptime(d, fmt)
+                    except ValueError:
+                        continue
+                raise ValueError(f"Unsupported date format: {d}. Expected one of dd-mm-yyyy, yyyy-mm-dd, mm-dd-yyyy, dd/mm/yyyy, mm/dd/yyyy")
+
+            from_dt = _parse_any(date_range['from'])
+            to_dt = _parse_any(date_range['to'])
+
             # Keep both ISO and display-formatted versions
-            from_iso = datetime.strptime(date_range['from'], '%Y-%m-%d').strftime('%Y-%m-%d')
-            to_iso = datetime.strptime(date_range['to'], '%Y-%m-%d').strftime('%Y-%m-%d')
-            from_date = datetime.strptime(date_range['from'], '%Y-%m-%d').strftime(date_format)
-            to_date = datetime.strptime(date_range['to'], '%Y-%m-%d').strftime(date_format)
+            from_iso = from_dt.strftime('%Y-%m-%d')
+            to_iso = to_dt.strftime('%Y-%m-%d')
+            from_date = from_dt.strftime(date_format)
+            to_date = to_dt.strftime(date_format)
             print(f"[DEBUG] Date filter: {from_date} to {to_date}")
             
             if condition == "between":
@@ -157,10 +176,33 @@ class FilterManager:
         table_config = self.rules.get(table_key)
         print(f"[DEBUG] Table config found: {table_config}")
         
-        if table_config and 'filters' in table_config:
-            filters = table_config['filters']
-            print(f"[DEBUG] Returning filters: {filters}")
-            return filters
+        # Support both shapes:
+        # 1) Nested: { "filters": { "date": {...}, "value": {...} } }
+        # 2) Flat:   { "date": {...}, "value": {...} }
+        if table_config:
+            candidate_filters: Dict[str, Any] = {}
+            if isinstance(table_config, dict):
+                if 'filters' in table_config and isinstance(table_config['filters'], dict):
+                    candidate_filters = table_config['filters']
+                else:
+                    # Collect known filter types at top level
+                    for key in ("date", "value"):
+                        if key in table_config and isinstance(table_config[key], dict):
+                            candidate_filters[key] = table_config[key]
+
+            # Keep only enabled filters (enabled == 1), ignore order
+            enabled_filters = {
+                k: v for k, v in candidate_filters.items()
+                if isinstance(v, dict) and v.get('enabled', 1) == 1
+            }
+
+            if enabled_filters:
+                print(f"[DEBUG] Returning filters: {enabled_filters}")
+                return enabled_filters
+            elif candidate_filters:
+                # If none enabled, still return the declared ones (build_filters will skip disabled)
+                print(f"[DEBUG] Returning declared filters (none enabled): {candidate_filters}")
+                return candidate_filters
         
         # Default fallback
         print("[DEBUG] Using default fallback config")

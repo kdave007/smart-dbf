@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "description": "Field projection and alias map per table. If all=true, return all fields. If all=false, return only listed fields. Optional aliases can rename output field keys.",
+  "tables": {
+    "__default__": {
+      "all": true,
+      "fields": [],
+      "aliases": {}
+    },
+
+    "VENTA": {
+      "all": false,
+      "fields": [
+        "NO_REFEREN",
+        "F_EMISION",
+        "IMPORTE"
+      ],
+      "aliases": {
+        "NO_REFEREN": "NUM_REF",
+        "IMPORTE": "TOTAL"
+      },
+      "profiles": {
+        "default": { "all": true, "fields": ["NO_REFEREN", "F_EMISION", "IMPORTE"], "aliases": {"NO_REFEREN": "NUM_REF", "IMPORTE": "TOTAL"} },
+        "composed_parent": { "all": false, "fields": ["NO_REFEREN"], "aliases": {} }
+      }
+    },
+
+    "PARTVTA": {
+      "all": true,
+      "fields": [],
+      "aliases": {},
+      "profiles": {
+        "default": { "all": true, "fields": [], "aliases": {} }
+      }
+    },
+
+    "CANOTA": {
+      "all": false,
+      "fields": [
+        "NOTA_FOLIO",
+        "NOTA_FECHA",
+        "CLIENTE"
+      ],
+      "aliases": {}
+    }
+  },
+  "relationships": [
+    {
+      "name": "VENTA_to_PARTVTA",
+      "parent": "VENTA",
+      "child": "PARTVTA",
+      "parent_key_field": "NO_REFEREN",
+      "child_match_field": "NO_REFEREN",
+      "parent_profile": "composed_parent"
+    }
+  ]
+}

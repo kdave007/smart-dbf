@@ -1,6 +1,8 @@
 import sys
 import os
 from pathlib import Path
+import time
+from datetime import datetime
 
 # Add the project root directory to the Python path
 project_root = Path(__file__).parent.parent.parent
@@ -39,7 +41,7 @@ def test_with_custom_args(data_source, password, date_from=None, date_to=None, t
             mapping_file_path=str(mappings_path),
             dll_path=dll_path,
             filters_file_path=str(rules_path),
-            encrypted=True
+            encrypted=False
         )
         
         # Show table info
@@ -60,14 +62,19 @@ def test_with_custom_args(data_source, password, date_from=None, date_to=None, t
         # Test with date filter if provided
         if date_from and date_to:
             print(f"\n=== Records from {table_name} with date filter ({date_from} to {date_to}) ===")
+            _t0 = time.perf_counter()
             filtered_data = controller.get_table_data(
                 table_name=table_name,
                 date_range={"from": date_from, "to": date_to},
                 limit=None
             )
-            print(f"Found {len(filtered_data)} records")
+            _elapsed = time.perf_counter() - _t0
+            
             for i, record in enumerate(filtered_data, 1):
-                print(f"Record {i}: {record.get('NO_REFEREN')} - index = {record.get('__meta')}")
+                print(f"Record {i}: {record.get('NOTA_FOLIO')} {record.get('NOTA_FECHA')} - index = {record.get('__meta')}")
+
+            print(f"Fetch time: {_elapsed*1000:.2f} ms ({_elapsed:.3f} s)")
+            print(f"Found {len(filtered_data)} records")
         else:
             print(f"\nNo date filter applied.")
         
@@ -82,10 +89,10 @@ if __name__ == "__main__":
     data_src = r"C:\Users\campo\Documents\projects\data_sucursales\arauc"
   
     test_with_custom_args(
-        data_source=enc_data_src,
+        data_source=data_src,
         password="X3WGTXG5QJZ6K9ZC4VO2",  # ← Replace with your real password
-        date_from="2025-01-01",  # Changed to match your actual data date
-        date_to="2025-04-30",
-        table_name="VENTA",
+        date_from="01-01-2025",  # Changed to match your actual data date
+        date_to="09-30-2025",
+        table_name="CUNOTA",
         dll_path=r"C:\Users\campo\Documents\projects\smart-dbf\Advantage.Data.Provider.dll",
     )
