@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from datetime import datetime
+from src.utils.logging_controller import LoggingController
 
 
 class FilterManager:
@@ -84,7 +85,7 @@ class FilterManager:
         date_format = filter_config.get("format", "%d/%m/%Y")
         condition = filter_config.get("condition", "between")
         
-        print(f"[DEBUG] Building date filter: field={date_field}, format={date_format}, condition={condition}")
+        # print(f"[DEBUG] Building date filter: field={date_field}, format={date_format}, condition={condition}")
         
         try:
             # Parse user-provided dates in multiple common formats and normalize
@@ -111,7 +112,7 @@ class FilterManager:
             to_iso = to_dt.strftime('%Y-%m-%d')
             from_date = from_dt.strftime(date_format)
             to_date = to_dt.strftime(date_format)
-            print(f"[DEBUG] Date filter: {from_date} to {to_date}")
+            # print(f"[DEBUG] Date filter: {from_date} to {to_date}")
             
             if condition == "between":
                 return [{
@@ -164,7 +165,7 @@ class FilterManager:
     def _get_all_filters_for_table(self, table_name: str) -> Dict[str, Dict[str, Any]]:
         """Get all filter configurations for a specific table from rules"""
         print(f"[DEBUG] Looking up all filters for table: {table_name}")
-        print(f"[DEBUG] Available tables in rules: {list(self.rules.keys()) if self.rules else 'None'}")
+        # print(f"[DEBUG] Available tables in rules: {list(self.rules.keys()) if self.rules else 'None'}")
         
         if not self.rules:
             print("[DEBUG] No table filters loaded, using default")
@@ -172,10 +173,10 @@ class FilterManager:
         
         # Remove .DBF extension if present for lookup
         table_key = table_name.replace('.DBF', '')
-        print(f"[DEBUG] Looking for table key: {table_key}")
+        # print(f"[DEBUG] Looking for table key: {table_key}")
         
         table_config = self.rules.get(table_key)
-        print(f"[DEBUG] Table config found: {table_config}")
+        # print(f"[DEBUG] Table config found: {table_config}")
         
         # Support both shapes:
         # 1) Nested: { "filters": { "date": {...}, "value": {...} } }
@@ -198,7 +199,7 @@ class FilterManager:
             }
 
             if enabled_filters:
-                print(f"[DEBUG] Returning filters: {enabled_filters}")
+                # print(f"[DEBUG] Returning filters: {enabled_filters}")
                 return enabled_filters
             elif candidate_filters:
                 # If none enabled, still return the declared ones (build_filters will skip disabled)

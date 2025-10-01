@@ -58,12 +58,12 @@ class Composed:
         # print(f' REF {references[0]}')
         return references
 
-    def get_table_data(self, table, date_range, limit: int = 300):
+    def get_table_data(self, table_name, date_range, limit: int = 300):
         """
             TODO here i need to fetch data only by the reference matching field and then search in the actual target table 
         """
-        print(f" GET TABLE DATA FOR {table}")
-        related_params = self._get_composed_parent_fields(table)
+        print(f" GET TABLE DATA FOR {table_name}")
+        related_params = self._get_composed_parent_fields(table_name)
         references = self._get_references( related_params,date_range, limit)
         matching_field = related_params.get('matching_field')
         # Handle matching_field as list or string
@@ -71,7 +71,7 @@ class Composed:
             matching_field = matching_field[0]  # Take first element if it's a list
 
         # Use chunked method for better performance with large datasets
-        results = self.get_by_references_chunked(references, matching_field, table, chunk_size=2000)
+        results = self.get_by_references_chunked(references, matching_field, table_name, chunk_size=2000)
         self._debug_match_summary(references, results, matching_field) 
         # sys.exit()   
             

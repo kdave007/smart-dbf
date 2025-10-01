@@ -1,0 +1,9 @@
+{
+    "sucursal":"ARAUC",
+    "plaza":"XALAP",
+    "config_endpoint":"www.test.com",
+    "dll_path":"C:\\Users\\campo\\Documents\\projects\\DBF_Bridge\\Advantage.Data.Provider.dll",
+    "data_source":"C:\\Users\\campo\\Documents\\projects\\data_sucursales\\arauc"
+    
+    
+}

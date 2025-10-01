@@ -1,6 +1,7 @@
 {
     "VENTA": {
         "filters": {
+            "identifier_field":"NO_REFEREN",
             "date": {
                 "field": "F_EMISION",
                 "format": "%m/%d/%Y",
@@ -11,6 +12,7 @@
         "strategy":"simple"
     },
     "PARTVTA": {
+        "identifier_field":"NO_REFEREN",
         "filters": {
             "value":{
                     "field": "NO_REFEREN",
@@ -27,6 +29,7 @@
          "strategy":"composed"
     },
     "VALES": {
+        "identifier_field":"NO_CONSEC",
         "filters": {
             "date": {
                 "field": "FECHA",
@@ -38,6 +41,7 @@
         "strategy":"simple"
     },
     "PARVALES": {
+        "identifier_field":"NO_CONSEC",
         "filters": {
             "value":{
                     "field": "NO_CONSEC",
@@ -62,6 +66,7 @@
         }
     },
     "CANOTA": {
+        "identifier_field":"NOTA_FOLIO",
         "filters": {
             "date": {
                 "field": "NOTA_FECHA",
@@ -73,6 +78,7 @@
         "strategy":"simple"
     },
     "CUNOTA": {
+        "identifier_field":"NOTA_FOLIO",
         "filters": {
             "value":{
                 "field": "NOTA_FOLIO",

@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .connection import DBFConnection
 from .converters import DataConverter
+from src.utils.hash_manager import HashManager
 
 class DBFReader:
     def __init__(self, data_source: str, encryption_password: str = None, encrypted: bool = True):
@@ -21,6 +22,7 @@ class DBFReader:
         logging.info(f"Initializing DBFReader with data source: {data_source}")
         self.connection = DBFConnection(data_source, encryption_password, encrypted)
         self.converter = DataConverter()
+        self.hash_manager = HashManager()
 
     def read_table(self, table_name: str, limit: Optional[int] = None, filters: Optional[List[Dict[str, Any]]] = None, include_recno: bool = True, select_fields: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         """Read records from a table with optional filters.
@@ -134,10 +136,18 @@ class DBFReader:
                         rowid_hex = None
 
                     meta = {}
+
+                    # Generate hash of record (excluding recno)
+                   
+                    
+                    record_hash = self.hash_manager.hash_record(record)
+
+
                     if recno_val is not None:
                         meta['recno'] = recno_val
                     if rowid_hex is not None:
                         meta['rowid'] = rowid_hex
+                    meta['hash'] = record_hash
                     if meta:
                         record['__meta'] = meta
 
