@@ -60,7 +60,7 @@ def test_composed_get_table_data(
         if isinstance(data, list):
             print(f"Returned {len(data)} records")
             for i, row in enumerate(data[:], 1):
-                print(f"Ref {row.get('NOTA_FOLIO')}: {row.get('__meta')}")
+                print(f"Ref {row.get('NO_CONSEC')}: {row.get('__meta')}")
         else:
             print("Returned:", data)
 
@@ -79,9 +79,9 @@ if __name__ == "__main__":
     test_composed_get_table_data(
         data_source=data_src,
         password="X3WGTXG5QJZ6K9ZC4VO2",  # ← Replace with your real password
-        table="CUNOTA",               # main table you want to explore
+        table="PARVALES",               # main table you want to explore
         dll_path=r"C:\Users\campo\Documents\projects\smart-dbf\Advantage.Data.Provider.dll",
         encrypted=False,
-        date_from="2025-09-25",  # Changed to match your actual data date
-        date_to="2025-09-29"
+        date_from="2025-09-19",  # Changed to match your actual data date
+        date_to="2025-09-19"
     )

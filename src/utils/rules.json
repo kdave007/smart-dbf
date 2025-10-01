@@ -29,18 +29,29 @@
     "VALES": {
         "filters": {
             "date": {
-                "field": "F_EMISION",
-                "format": "%d/%m/%Y"
+                "field": "FECHA",
+                "format": "%m/%d/%Y",
+                "condition":"between",
+                "enabled":1
             }
-        }
+        },
+        "strategy":"simple"
     },
     "PARVALES": {
         "filters": {
-            "date": {
-                "field": "F_EMISION",
-                "format": "%d/%m/%Y"
-            }
-        }
+            "value":{
+                    "field": "NO_CONSEC",
+                    "condition":"equal",
+                    "enabled":1
+                }
+        },
+        "composed_parent": { 
+            "all": false, 
+            "matching_field": ["NO_CONSEC"],
+             "fields":["NO_CONSEC"], 
+             "related_table": "VALES" 
+            },
+        "strategy":"composed"
     },
     "CLIENTES": {
         "filters": {
@@ -59,7 +70,7 @@
                 "enabled":1
             }
         },
-        "schema_approach":"simple"
+        "strategy":"simple"
     },
     "CUNOTA": {
         "filters": {
