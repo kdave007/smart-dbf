@@ -8,6 +8,7 @@ from datetime import datetime
 project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
+
 from src.tables_schemas.simple import Simple
 
 

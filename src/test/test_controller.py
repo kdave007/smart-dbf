@@ -7,8 +7,13 @@ from datetime import datetime
 project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
+
+
 from src.controllers.dbf_data import DBFData
-from src.utils.logging_controller import logging
+from src.utils.logging_controller import LoggingController
+
+# Initialize logging
+logging = LoggingController.get_instance()
 
 def test():
     print("main")
@@ -28,11 +33,11 @@ def test():
     config = config_manager.get_combined_config("venue.json")
     data_source = config.get('data_source')
 
-    data_source = r"C:\Users\campo\Documents\dbf_encriptados\pospcp"
+    # data_source = r"C:\Users\campo\Documents\dbf_encriptados\pospcp"
     
     controller = DBFData(
         data_source=data_source,
-        encrypted=True,
+        encrypted=False,
         encryption_password="X3WGTXG5QJZ6K9ZC4VO2"
     )
 

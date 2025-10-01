@@ -1,0 +1,31 @@
+# Smart DBF Requirements
+# Core Python dependencies for the Smart DBF project
+
+# Data processing and manipulation
+pathlib2>=2.3.7
+
+# JSON handling (built-in, but specifying for clarity)
+# json - built-in module
+
+# System and file operations (built-in modules)
+# sys - built-in module
+# os - built-in module
+# time - built-in module
+# datetime - built-in module
+# hashlib - built-in module
+
+# Type hints (built-in in Python 3.5+)
+# typing - built-in module
+
+# Database connectivity (if needed for future API integration)
+# requests>=2.28.0  # Uncomment if API calls are needed
+
+# Development and testing dependencies
+# pytest>=7.0.0  # Uncomment for testing framework
+# pytest-cov>=4.0.0  # Uncomment for test coverage
+
+# Note: This project primarily uses Python built-in modules
+# Additional dependencies may be required for:
+# - .NET interop (pythonnet) if using .NET DLLs directly
+# - Database drivers for specific database connections
+# - Web framework dependencies if building API endpoints

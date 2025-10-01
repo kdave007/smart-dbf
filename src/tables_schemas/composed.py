@@ -24,7 +24,7 @@ class Composed:
                 table_config = data.get(table_key, {})
                 composed_parent = table_config.get('composed_parent', {})
 
-                print(f"[Composed] Found composed_parent for {table_name}: {composed_parent}")
+                # print(f"[Composed] Found composed_parent for {table_name}: {composed_parent}")
                 return composed_parent
         except Exception as e:
             print(f"[Composed] Error loading field_map.json: {e}")
