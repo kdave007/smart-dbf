@@ -28,6 +28,7 @@ def test():
     logging.info(border)
 
     # Get data source from config manager
+    from src.filters.filter_manager import FilterManager
     from src.utils.config_manager import ConfigManager
     config_manager = ConfigManager("ENV")
     config = config_manager.get_combined_config("venue.json")
@@ -48,7 +49,7 @@ def test():
     print(f"results {len(result)}")
 
     # Get field name from rules.json based on table name
-    from src.filters.filter_manager import FilterManager
+  
     filter_manager = FilterManager(controller.filters_file_path)
     
     # Get the field configuration for this table
