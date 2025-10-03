@@ -1,7 +1,7 @@
 {
-    "VENTA": {
+    "VENTA": {        
+        "identifier_field":"NO_REFEREN",
         "filters": {
-            "identifier_field":"NO_REFEREN",
             "date": {
                 "field": "F_EMISION",
                 "format": "%m/%d/%Y",

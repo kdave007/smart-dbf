@@ -1,0 +1,32 @@
+{
+
+    "VENTA": {
+        "type": "natural_key",
+        "key_field": "NO_REFEREN"
+    },
+    "PARTVTA": {
+        "type": "physical_position", 
+        "key_field": "RECNO"
+    },
+    "VALES": {
+        "type": "natural_key",
+        "key_field": "NO_CONSEC"
+    },
+    "PARVALES": {
+        "type": "physical_position", 
+        "key_field": "RECNO"
+    },
+    "CANOTA": {
+        "type": "natural_key",
+        "key_field": "NOTA_FOLIO"
+    },
+    "CUNOTA": {
+        "type": "physical_position", 
+        "key_field": "RECNO"
+    },
+    "XCORTE": {
+        "type": "natural_key",
+        "key_field": "undefined"
+    }
+    
+  }
