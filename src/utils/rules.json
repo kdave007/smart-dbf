@@ -95,10 +95,13 @@
         "strategy":"composed"
     },
     "XCORTE": {
+        "identifier_field":"FECHA",
         "filters": {
             "date": {
-                "field": "FECHA_REG",
-                "format": "%d/%m/%Y"
+                "field": "FECHA",
+                "format": "%m/%d/%Y",
+                "condition":"between",
+                "enabled":1
             }
         }
     }

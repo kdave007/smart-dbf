@@ -1,0 +1,77 @@
+{
+    "db":{"name":"dbf_process_ejemplo", "path":"C:\\Users\\campo\\Documents\\projects\\smart-dbf-tool\\src"},
+    "actions":{
+        "create":["VENTA","PARTVTA","VALES","PARVALES","CANOTA","CUNOTA","XCORTE","reintentos","api_log","mapeo_cortes"],
+        "delete":["VENTA","PARTVTA","VALES","PARVALES","CANOTA","CUNOTA","XCORTE","reintentos","api_log","mapeo_cortes"],
+        "execute":"create"
+    },
+    "tables":[
+        {
+            "name":"EJEMPLO",
+            "schema": "natural_key",
+            "id_fields": ["ID"],
+            "additional_columns": [{ "name": "columna_extra", "type": "INTEGER", "default": 0 }],
+            "skip_columns":["eliminado", "referencia"]
+
+        },
+        {
+           "name":"VENTA",
+           "schema": "natural_key",
+           "id_fields": ["NO_REFEREN"],
+           "additional_columns": [],
+           "skip_columns":[]
+        },
+        {
+            "name":"PARTVTA",
+            "schema": "physical_position", 
+            "id_fields": ["RECNO"],
+            "additional_columns": [],
+            "skip_columns":[]
+            
+        },
+        {
+            "name":"CANOTA",
+            "schema": "natural_key",
+            "id_fields": ["NOTA_FOLIO"],
+            "additional_columns": [],
+            "skip_columns":[]
+        },
+        {
+           "name":"CUNOTA",
+           "schema": "physical_position", 
+           "id_fields": ["RECNO"],
+           "additional_columns": [],
+           "skip_columns":[]
+        },
+        {
+           "name":"VALES",
+           "schema": "natural_key",
+           "id_fields": ["NO_CONSEC"],
+           "additional_columns": [],
+           "skip_columns":[]
+        },
+        {
+            "name":"PARVALES",
+            "schema": "physical_position", 
+            "id_fields": ["RECNO"],
+            "additional_columns": [],
+            "skip_columns":[]
+        },
+        {
+            "name":"XCORTE",
+            "schema": "composed_hash", 
+            "id_fields": ["FECHA"],
+            "additional_columns": [],
+            "skip_columns":[],
+            "hash_fields":["FECHA","VTACONT","SVTACONT","DESCONT","TIENDA","MODHORA"]
+        },
+        {
+            "name":"FLUJORES",
+            "type": "composed_hash",
+            "id_fields": ["IDFLUJO"],
+            "additional_columns": [],
+            "skip_columns":[],
+            "hash_fields":["REF_NUM","ING_EG","IDFLUJO"]
+        }
+    ]
+}
