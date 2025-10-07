@@ -148,6 +148,9 @@ class DBFReader:
                     if rowid_hex is not None:
                         meta['rowid'] = rowid_hex
                     meta['hash'] = record_hash
+
+                    """TODO HERE MIGHT BE THE PLACE TO APPLY THE CALCULATE ID BY THE STRATEGY ASSIGNED"""
+
                     if meta:
                         record['__meta'] = meta
 

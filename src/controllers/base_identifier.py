@@ -20,3 +20,4 @@ class BaseIdentifier(ABC):
         Returns the strategy type
         """
         pass
+
