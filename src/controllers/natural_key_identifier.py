@@ -24,7 +24,6 @@ class NaturalKeyIdentifier(BaseIdentifier):
         
         key_fields = self.config.get('key_fields')
 
-        print(f' key fields :: {key_fields}')
 
         if len(key_fields) == 1:
             # Clave simple: 'folio' -> valor

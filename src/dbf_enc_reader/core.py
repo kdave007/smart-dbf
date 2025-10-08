@@ -60,7 +60,7 @@ class DBFReader:
                 use_or = len(filters) > 1 and all(f['field'] == filters[0]['field'] for f in filters)
                 
                 for f in filters:
-                    print(f' filter ////// {f}')
+                    # print(f' filter ////// {f}')
                     if f['operator'] == 'range':
                         filter_conditions.append(
                             f"{f['field']} >= '{f['from_value']}' AND {f['field']} <= '{f['to_value']}'"
@@ -70,7 +70,7 @@ class DBFReader:
                             f"{f['field']} {f['operator']} '{f.get('value', '')}'"
                         )
 
-                print(f'HERE ------ {filter_conditions}')        
+                # print(f'HERE ------ {filter_conditions}')        
                 
                 if filter_conditions:
                     join_op = " OR " if use_or else " AND "
