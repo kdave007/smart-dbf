@@ -97,7 +97,8 @@ class DataTablesSchemasManager:
         """
         all_columns = self.get_all_columns_for_schema(schema_type)
         return [col.get("name") for col in all_columns if col.get("name")]
-    
-   
-    
-   
+
+    def get_id_field_name(self, schema_type):
+     
+        
+        return self.config.get("schemas", {}).get(schema_type, {}).get("id_column_name")

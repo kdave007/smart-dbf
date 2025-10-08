@@ -145,19 +145,21 @@ class DBFReader:
 
                     #calculate id by strategy
                     strategy = self.resolver.resolve_identifier_strategy(table_name)
+                    field_name = strategy.get_sql_field_id_name()
                     # print(f' STRATEGY NAME FOR TABLE {table_name} :: {strategy.get_strategy_name()}')
 
                     if recno_val is not None:
+                        #we need to check if it uses recno as id, cause its not already set in the record yet, so cant be calculated, we get the recno and add it directly
                         if strategy.get_strategy_name() == 'physical_position':
-                            meta['recno_id'] = recno_val
+                            meta[field_name] = recno_val
                         else:
-                            meta['id'] = strategy.calculate_identifier(record)
+                            meta[field_name] = strategy.calculate_identifier(record)
                             meta['recno'] = recno_val
                     
                     if rowid_hex is not None:
                         meta['rowid'] = rowid_hex
 
-                    meta['hash'] = record_hash
+                    meta['hash_comparador'] = record_hash
 
                     if meta:
                         record['__meta'] = meta

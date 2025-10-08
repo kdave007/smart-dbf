@@ -1,5 +1,6 @@
 from .base_identifier import BaseIdentifier
 from typing import Dict, Any
+from ..utils.data_tables_schemas_manager import DataTablesSchemasManager
 
 class NaturalKeyIdentifier(BaseIdentifier):
     """Para tablas con folios únicos (cabeceras, catálogos)"""
@@ -14,6 +15,7 @@ class NaturalKeyIdentifier(BaseIdentifier):
         """
         super().__init__(table_name)
         self.config = config
+        self.schema_type = "natural_key"
 
     def calculate_identifier(self, record: Dict) -> Any:
         """
@@ -33,4 +35,10 @@ class NaturalKeyIdentifier(BaseIdentifier):
             return '_'.join(parts)
     
     def get_strategy_name(self) -> str:
-        return "natural_key"
+        return self.schema_type 
+
+    def get_sql_field_id_name(self) -> str:
+        """
+            Returns the strategy name in the sql table
+        """
+        return DataTablesSchemasManager().get_id_field_name(self.schema_type)

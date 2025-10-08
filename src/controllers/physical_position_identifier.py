@@ -1,6 +1,7 @@
 from .base_identifier import BaseIdentifier
 from typing import Dict, Any
 import sys
+from ..utils.data_tables_schemas_manager import DataTablesSchemasManager
 
 class PhysicalPositionIdentifier(BaseIdentifier):
     """Para tablas con duplicados + sin PACK (partidas)"""
@@ -15,6 +16,7 @@ class PhysicalPositionIdentifier(BaseIdentifier):
         """
         super().__init__(table_name)
         self.config = config
+        self.schema_type = "physical_position"
     
     def calculate_identifier(self, record: Dict) -> Any:
         """
@@ -33,4 +35,12 @@ class PhysicalPositionIdentifier(BaseIdentifier):
 
 
     def get_strategy_name(self) -> str:
-        return "physical_position"
+        return self.schema_type
+
+    
+    def get_sql_field_id_name(self) -> str:
+        """
+        Returns the strategy name in the sql table
+        """
+        return DataTablesSchemasManager().get_id_field_name(self.schema_type)
+        

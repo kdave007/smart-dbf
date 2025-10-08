@@ -21,3 +21,10 @@ class BaseIdentifier(ABC):
         """
         pass
 
+    @abstractmethod
+    def get_sql_field_id_name(self) -> str:
+        """
+        Returns the strategy type
+        """
+        pass
+

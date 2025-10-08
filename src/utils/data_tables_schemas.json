@@ -19,16 +19,19 @@
             ]
         },
         "composed_hash":{
+            "id_column_name":"hash_id",
             "columns": [
                 { "name": "hash_id", "type": "TEXT", "not_null": true, "pk": true, "comment": "Identificador estable (ej: campo IDFLUJO o combinación estable)" }
               ]
         },
         "physical_position":{
+            "id_column_name":"recno_id",
             "columns": [
                 { "name": "recno_id", "type": "INTEGER", "not_null": true, "pk": true, "comment": "Número de registro físico en el DBF" }
             ]
         },
         "natural_key":{
+            "id_column_name":"natural_id",
             "columns": [
                 { "name": "natural_id", "type": "TEXT", "not_null": true, "pk": true, "comment": "Hash o concatenación de las claves naturales (ej: NO_REFEREN)" }
             ]
