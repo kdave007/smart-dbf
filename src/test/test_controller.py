@@ -7,13 +7,13 @@ from datetime import datetime
 project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
-from src.controllers import data_comparator
 from src.controllers.dbf_data import DBFData
 from src.utils.logging_controller import LoggingController
 from src.filters.filter_manager import FilterManager
 from src.utils.config_manager import ConfigManager
 from src.controllers.sql_references import SQLReferences
 from src.controllers.data_comparator import DataComparator
+from src.controllers.operation import Operation
 
 # Initialize logging
 logging = LoggingController.get_instance()
@@ -49,7 +49,7 @@ def test():
     table="CUNOTA"
     """ date format YYYY MM DD """
     # date_range={"from": "2025-01-22", "to": "2025-01-22"}
-    date_range={"from": "2025-08-29", "to": "2025-08-31"}
+    date_range={"from": "2025-09-25", "to": "2025-09-25"}
     
     dbf_records = controller.get(table, date_range)
     print(f"dbf_recordss {len(dbf_records)}")
@@ -72,17 +72,59 @@ def test():
 
     # print_sql_references(sql_records, 30)
     
-
     comparator = DataComparator(table)
     operations_obj = comparator.compare_records(
         dbf_records, 
         sql_records
     )
 
-    print(f"New: {(operations_obj['new'][0])}")
+    print(f"New: {len(operations_obj['new'])}")
     print(f"Changed: {len(operations_obj['changed'])}")
     print(f"Unchanged: {len(operations_obj['unchanged'])}") 
     print(f"Deleted: {len(operations_obj['deleted'])}")
+
+    # Get schema and field_id for API operations
+    from src.utils.sql_identifiers_manager import SQLIdentifiersManager
+    from src.utils.data_tables_schemas_manager import DataTablesSchemasManager
+    
+    sql_id_manager = SQLIdentifiersManager()
+    data_table_schema_manager = DataTablesSchemasManager()
+    
+    schema_type = sql_id_manager.get_schema_type(table)
+    field_id = data_table_schema_manager.get_id_field_name(schema_type)
+    
+    # Initialize Operation class with API base URL
+    api_base_url = "https://api.example.com/v1"  # Replace with your actual API URL
+    operation = Operation(api_base_url, table, simulate_response=True)
+    
+    # Send operations to API endpoints
+    print("\n" + "="*50)
+    print("SENDING OPERATIONS TO API")
+    print("="*50)
+    print(f"Schema: {schema_type}, Field ID: {field_id}")
+    
+    # Send new records
+    if operations_obj['new']:
+        print(f"Sending {len(operations_obj['new'])} new records...")
+        new_response = operation.send_new_records(operations_obj['new'], schema_type, field_id)
+        print(f"New records response: {new_response}")
+    
+    # Send updated records  
+    if operations_obj['changed']:
+        print(f"Sending {len(operations_obj['changed'])} updated records...")
+        update_response = operation.send_updates(operations_obj['changed'], schema_type, field_id)
+        print(f"Update response: {update_response}")
+    
+    # Send deleted records
+    if operations_obj['deleted']:
+        print(f"Sending {len(operations_obj['deleted'])} deleted records...")
+        delete_response = operation.send_deletes(operations_obj['deleted'], schema_type, field_id)
+        print(f"Delete response: {delete_response}")
+    
+    print(f"Unchanged records ({len(operations_obj['unchanged'])}) - no action needed")
+
+    
+
 
 def print_dbf_records(dbf_records, field_name, last_N):
     total_records = len(dbf_records)
