@@ -45,6 +45,8 @@ def test():
     )
 
     table="XCORTE"
+    # table="CANOTA"
+    # table="CUNOTA"
     """ date format YYYY MM DD """
     # date_range={"from": "2025-01-22", "to": "2025-01-22"}
     date_range={"from": "2025-08-29", "to": "2025-08-31"}
@@ -66,8 +68,8 @@ def test():
         print(f"{field_name} : {record.get(field_name)}  index : {record.get('__meta')}")
     
 
-    data_comparator = DataComparator()
-    data_comparator.get_blueprint(table, result)
+    # data_comparator = DataComparator()
+    # data_comparator.get_blueprint(table, result)
 
 
 if __name__ == "__main__":

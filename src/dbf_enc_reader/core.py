@@ -7,6 +7,7 @@ from pathlib import Path
 from .connection import DBFConnection
 from .converters import DataConverter
 from src.utils.hash_manager import HashManager
+from src.controllers.identifier_resolver import IdentifierResolver 
 
 class DBFReader:
     def __init__(self, data_source: str, encryption_password: str = None, encrypted: bool = True):
@@ -23,6 +24,7 @@ class DBFReader:
         self.connection = DBFConnection(data_source, encryption_password, encrypted)
         self.converter = DataConverter()
         self.hash_manager = HashManager()
+        self.resolver = IdentifierResolver()
 
     def read_table(self, table_name: str, limit: Optional[int] = None, filters: Optional[List[Dict[str, Any]]] = None, include_recno: bool = True, select_fields: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         """Read records from a table with optional filters.
@@ -38,6 +40,7 @@ class DBFReader:
             List of records as dictionaries. When include_recno=True, each record will contain a
             "__meta" key with {"recno": <int>}.
         """
+
         results = []
         with self.connection as conn:
             from System.Data import CommandType
@@ -138,18 +141,23 @@ class DBFReader:
                     meta = {}
 
                     # Generate hash of record (excluding recno)
-                   
-                    
                     record_hash = self.hash_manager.hash_record(record)
 
+                    #calculate id by strategy
+                    strategy = self.resolver.resolve_identifier_strategy(table_name)
+                    # print(f' STRATEGY NAME FOR TABLE {table_name} :: {strategy.get_strategy_name()}')
 
                     if recno_val is not None:
-                        meta['recno'] = recno_val
+                        if strategy.get_strategy_name() == 'physical_position':
+                            meta['recno_id'] = recno_val
+                        else:
+                            meta['id'] = strategy.calculate_identifier(record)
+                            meta['recno'] = recno_val
+                    
                     if rowid_hex is not None:
                         meta['rowid'] = rowid_hex
-                    meta['hash'] = record_hash
 
-                    """TODO HERE MIGHT BE THE PLACE TO APPLY THE CALCULATE ID BY THE STRATEGY ASSIGNED"""
+                    meta['hash'] = record_hash
 
                     if meta:
                         record['__meta'] = meta

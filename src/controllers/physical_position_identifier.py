@@ -1,5 +1,6 @@
 from .base_identifier import BaseIdentifier
 from typing import Dict, Any
+import sys
 
 class PhysicalPositionIdentifier(BaseIdentifier):
     """Para tablas con duplicados + sin PACK (partidas)"""
@@ -19,13 +20,15 @@ class PhysicalPositionIdentifier(BaseIdentifier):
         """
         Usa RECNO (posición física) como identificador
         """
-        key_fields = [field.lower() for field in self.config.get('key_fields', [])]
+        # key_fields = [field.lower() for field in self.config.get('key_fields', [])]
 
-        print(f' key fields :: {key_fields}')
+        # print(f' key fields :: {key_fields}')
 
-        if len(key_fields) == 1:
-            # Clave simple: 'folio' -> valor
-            return record.get('__meta').get(key_fields[0])
+        # sys.exit(1)
+
+        # if len(key_fields) == 1:
+        #     # Clave simple: 'folio' -> valor
+        return record.get('__meta').get('recno')
 
 
 
