@@ -68,11 +68,21 @@ def test():
     sql_references_manager = SQLReferences(table)
     sql_records = sql_references_manager._get_by_batches(dbf_records)
 
+    print(f" {sql_records}")
+
     # print_sql_references(sql_records, 30)
     
 
-    # data_comparator = DataComparator()
-    # data_comparator.get_blueprint(table, dbf_records)
+    comparator = DataComparator(table)
+    operations_obj = comparator.compare_records(
+        dbf_records, 
+        sql_records
+    )
+
+    print(f"New: {(operations_obj['new'][0])}")
+    print(f"Changed: {len(operations_obj['changed'])}")
+    print(f"Unchanged: {len(operations_obj['unchanged'])}") 
+    print(f"Deleted: {len(operations_obj['deleted'])}")
 
 def print_dbf_records(dbf_records, field_name, last_N):
     total_records = len(dbf_records)
@@ -89,7 +99,7 @@ def print_sql_references(sql_records, last_N):
         print(f"\nSQL records found: {len(sql_records)}")
         
         # Show last n SQL records
-        sql_records_list = list(sql_records.values())
+        sql_records_list = list(sql_records)
         last_n_sql_records = sql_records_list[-last_N:] if len(sql_records_list) > last_N else sql_records_list
         
         print(f"\nShowing last {len(last_n_sql_records)} out of {len(sql_records_list)} SQL records:")

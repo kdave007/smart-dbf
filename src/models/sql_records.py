@@ -26,11 +26,11 @@ class SQLRecords:
         
         print(f"Processing {len(id_values)} IDs in batches of {batch_size}")
 
-        print(id_values)
+        # print(id_values)
         
         for i in range(0, len(id_values), batch_size):
             batch_ids = id_values[i:i + batch_size]
-            print(f"Batch {i//batch_size + 1}: {len(batch_ids)} records")
+            # print(f"Batch {i//batch_size + 1}: {len(batch_ids)} records")
             
             placeholders = ','.join(['?' for _ in batch_ids])
             query = f"""
@@ -38,21 +38,41 @@ class SQLRecords:
             WHERE {id_field_name} IN ({placeholders})
             AND batch_version = ? AND eliminado = 0 
             """
-            print(f" query  {query}")
+            # print(f" query  {query}")
             
             # Extract version ID if it's a dictionary
             version_id = version.get('id') if isinstance(version, dict) else version
             params = tuple(batch_ids + [version_id])
             batch_results = self.db_pool.execute_query(query, params)
-            # sys.exit()
+           
             # Convert sqlite3.Row objects to dict and build results
             for row in batch_results:
                 row_dict = dict(row)  # Convert sqlite3.Row to dict
                 all_results[row_dict[id_field_name]] = row_dict
         
-        print(f"Total matched: {len(all_results)} records")
+        # print(f"Total matched: {len(all_results)} records")
         return all_results
     
+    def select_all_records(self, table_name, limit=100):
+        """Select all records from a table with optional limit"""
+        query = f"""
+        SELECT * FROM {table_name} 
+        WHERE eliminado = 0 
+        ORDER BY id_local DESC 
+        LIMIT ?
+        """
+        
+        params = (limit,)
+        results = self.db_pool.execute_query(query, params)
+        
+        # Convert sqlite3.Row objects to dict
+        all_records = []
+        for row in results:
+            row_dict = dict(row)
+            all_records.append(row_dict)
+        
+        print(f"Retrieved {len(all_records)} records from {table_name}")
+        return all_records
 
 
     

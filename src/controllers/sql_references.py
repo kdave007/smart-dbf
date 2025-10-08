@@ -1,6 +1,7 @@
 from ..models.sql_records import SQLRecords
 from ..utils.sql_identifiers_manager import SQLIdentifiersManager
 from ..utils.data_tables_schemas_manager import DataTablesSchemasManager
+import sys
 
 
 class SQLReferences:
@@ -22,7 +23,9 @@ class SQLReferences:
         
         all_results = {}
         
-        # Process records in batches
+        # all_results = self.sql_records.select_all_records(self.table_name, 100)
+
+        # # Process records in batches
         for i in range(0, len(dbf_records), batch_size):
             records_batch = dbf_records[i:i + batch_size]
             batch_results = self.sql_records.batch_select_by_id(records_batch, field_name, self.table_name, version, len(records_batch))

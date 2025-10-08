@@ -164,7 +164,7 @@ class FilterManager:
     
     def _get_all_filters_for_table(self, table_name: str) -> Dict[str, Dict[str, Any]]:
         """Get all filter configurations for a specific table from rules"""
-        print(f"[DEBUG] Looking up all filters for table: {table_name}")
+        # print(f"[DEBUG] Looking up all filters for table: {table_name}")
         # print(f"[DEBUG] Available tables in rules: {list(self.rules.keys()) if self.rules else 'None'}")
         
         if not self.rules:

@@ -62,7 +62,7 @@ class Composed:
         """
             TODO here i need to fetch data only by the reference matching field and then search in the actual target table 
         """
-        print(f" GET TABLE DATA FOR {table_name}")
+        # print(f" GET TABLE DATA FOR {table_name}")
         related_params = self._get_composed_parent_fields(table_name)
         references = self._get_references( related_params,date_range, limit)
         matching_field = related_params.get('matching_field')

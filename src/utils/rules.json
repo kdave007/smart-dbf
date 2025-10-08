@@ -89,7 +89,7 @@
         "composed_parent": { 
             "all": false, 
             "matching_field": ["NOTA_FOLIO"],
-             "fields":["NOTA_FOLIO"], 
+             "fields":["NOTA_FOLIO","NOTA_FECHA"], 
              "related_table": "CANOTA" 
             },
         "strategy":"composed"
