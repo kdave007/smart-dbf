@@ -105,8 +105,9 @@ def test():
     version = sql_id_manager.get_batch_version()
     
     # Initialize Operation class with API base URL
+    client_id = config.get('sucursal') + "_" + config.get('plaza')
     api_base_url = "https://api.example.com/v1"  # Replace with your actual API URL
-    operation = Operation(api_base_url, table, simulate_response=debug_mode)
+    operation = Operation(api_base_url, table, client_id, simulate_response=debug_mode)
     
     # Initialize SQL Tracking Response
     tracking = SQLTrackingResponse(table)

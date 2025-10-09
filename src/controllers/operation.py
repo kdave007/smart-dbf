@@ -2,11 +2,12 @@ import requests
 from ..utils.response_simulator import ResponseSimulator
 
 class Operation:
-    def __init__(self, base_url, table_name, simulate_response=False):
+    def __init__(self, base_url, table_name, client_id, simulate_response=False):
         self.base_url = base_url
         self.simulate_response = simulate_response
         self.response_simulator = ResponseSimulator()
         self.table_name = table_name
+        self.client_id = client_id
         
         self.endpoints = {
             'new': f"{base_url}/{table_name}/new",
@@ -26,10 +27,11 @@ class Operation:
             'count': len(new_records),
             'schema': schema,
             'field_id': field_id,
-            'table_name': self.table_name
+            'table_name': self.table_name,
+            "client_id":self.client_id
         }
 
-        #print(f"SEND NEW : ",payload)
+        print(f"SEND NEW : ",payload)
 
         if self.simulate_response:
             print(f"//////  RESPONSE SIMULATION ///////")
