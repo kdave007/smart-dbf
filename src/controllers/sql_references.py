@@ -28,6 +28,7 @@ class SQLReferences:
         # # Process records in batches
         for i in range(0, len(dbf_records), batch_size):
             records_batch = dbf_records[i:i + batch_size]
+          
             batch_results = self.sql_records.batch_select_by_id(records_batch, field_name, self.table_name, version, len(records_batch))
             all_results.update(batch_results)
         

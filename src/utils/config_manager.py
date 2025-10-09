@@ -8,6 +8,11 @@ class ConfigManager:
     def __init__(self, source):
         self.source = source  #API or ENV
         self.config = {}
+        # Load configuration on initialization
+        if source.upper() == "ENV":
+            self._from_env()
+        elif source.upper() == "API":
+            self._from_api()
         
     def get_params(self) -> Dict[str, Any]:
         if self.source == "API":
@@ -118,4 +123,20 @@ class ConfigManager:
     def get_data_source(self) -> str:
         """Get data source path from configuration"""
         return self.config.get('data_source')
+    
+    def get_stop_flag(self) -> int:
+        """Get stop flag from environment"""
+        return int(self.config.get('STOP_FLAG', 0))
+    
+    def get_debug_mode(self) -> bool:
+        """Get debug mode from environment"""
+        return bool(int(self.config.get('DEBUG', 0)))
+    
+    def get_dbf_chunks_size(self) -> int:
+        """Get DBF chunks size from environment"""
+        return int(self.config.get('DBF_CHUNKS_SIZE', 500))
+    
+    def get_sql_enabled(self) -> bool:
+        """Get SQL enabled flag from environment"""
+        return bool(int(self.config.get('SQL_ENABLED', 0)))
     

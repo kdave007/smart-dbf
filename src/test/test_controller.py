@@ -14,6 +14,7 @@ from src.utils.config_manager import ConfigManager
 from src.controllers.sql_references import SQLReferences
 from src.controllers.data_comparator import DataComparator
 from src.controllers.operation import Operation
+from src.controllers.sql_tracking_response import SQLTrackingResponse
 
 # Initialize logging
 logging = LoggingController.get_instance()
@@ -46,10 +47,11 @@ def test():
 
     table="XCORTE"
     # table="CANOTA"
-    table="CUNOTA"
+    # table="CUNOTA"
     """ date format YYYY MM DD """
     # date_range={"from": "2025-01-22", "to": "2025-01-22"}
-    date_range={"from": "2025-09-25", "to": "2025-09-25"}
+    date_range={"from": "2025-09-25", "to": "2025-09-30"}
+    # date_range={"from": "2025-09-25", "to": "2025-09-25"}
     
     dbf_records = controller.get(table, date_range)
     print(f"dbf_recordss {len(dbf_records)}")
@@ -62,6 +64,14 @@ def test():
     
     # Get the identifier field for this table
     field_name = table_rules.get('identifier_field')
+    
+    # Get configuration values
+    config_manager = ConfigManager("env")  # Use environment variables
+    sql_enabled = config_manager.get_sql_enabled()
+    debug_mode = config_manager.get_debug_mode()
+
+    print(f"SQL enabled: {sql_enabled}")
+    print(f"Debug mode: {debug_mode}")
     
     print_dbf_records(dbf_records, field_name, 30)
     
@@ -92,10 +102,14 @@ def test():
     
     schema_type = sql_id_manager.get_schema_type(table)
     field_id = data_table_schema_manager.get_id_field_name(schema_type)
+    version = sql_id_manager.get_batch_version()
     
     # Initialize Operation class with API base URL
     api_base_url = "https://api.example.com/v1"  # Replace with your actual API URL
-    operation = Operation(api_base_url, table, simulate_response=True)
+    operation = Operation(api_base_url, table, simulate_response=debug_mode)
+    
+    # Initialize SQL Tracking Response
+    tracking = SQLTrackingResponse(table)
     
     # Send operations to API endpoints
     print("\n" + "="*50)
@@ -108,20 +122,40 @@ def test():
         print(f"Sending {len(operations_obj['new'])} new records...")
         new_response = operation.send_new_records(operations_obj['new'], schema_type, field_id)
         print(f"New records response: {new_response}")
+        
+        # Track the response
+        if sql_enabled:
+            tracking.post_insert_records_status(new_response, operations_obj['new'], field_id, version)
     
     # Send updated records  
-    if operations_obj['changed']:
-        print(f"Sending {len(operations_obj['changed'])} updated records...")
-        update_response = operation.send_updates(operations_obj['changed'], schema_type, field_id)
-        print(f"Update response: {update_response}")
+    # if operations_obj['changed']:
+    #     print(f"Sending {len(operations_obj['changed'])} updated records...")
+    #     update_response = operation.send_updates(operations_obj['changed'], schema_type, field_id)
+    #     print(f"Update response: {update_response}")
+        
+        # Track the response
+        # if sql_enabled:
+        #     tracking.post_update_records_status(update_response, operations_obj['changed'], field_id, version)
     
     # Send deleted records
-    if operations_obj['deleted']:
-        print(f"Sending {len(operations_obj['deleted'])} deleted records...")
-        delete_response = operation.send_deletes(operations_obj['deleted'], schema_type, field_id)
-        print(f"Delete response: {delete_response}")
+    # if operations_obj['deleted']:
+    #     print(f"Sending {len(operations_obj['deleted'])} deleted records...")
+    #     delete_response = operation.send_deletes(operations_obj['deleted'], schema_type, field_id)
+    #     print(f"Delete response: {delete_response}")
+        
+        # Track the response
+        # if sql_enabled:
+        #     tracking.post_delete_records_status(delete_response, operations_obj['deleted'], field_id, version)
     
     print(f"Unchanged records ({len(operations_obj['unchanged'])}) - no action needed")
+
+
+    """ TODO right now the process only sends the json records and expects an ok status with
+        an array of the records processed statuses and queu id, and sets the sql db status to 2
+        and when we query the sql references, we avoid status 2 cause its been processing by the server
+        this is only for testing, we still miss the GET request to actually update the real status of 
+        each record in the sqlite db
+    """
 
     
 

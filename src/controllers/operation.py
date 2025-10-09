@@ -56,7 +56,7 @@ class Operation:
         
         if self.simulate_response:
             print(f"//////  RESPONSE SIMULATION ///////")
-            server_response = self.response_simulator.simulate_api_response(new_records, field_id, 'update', schema)
+            server_response = self.response_simulator.simulate_api_response(changed_records, field_id, 'update', schema)
         else:
             server_response = self._send_request(self.endpoints['update'], payload)
 
@@ -79,7 +79,7 @@ class Operation:
         
         if self.simulate_response:
             print(f"//////  RESPONSE SIMULATION ///////")
-            server_response = self.response_simulator.simulate_api_response(new_records, field_id, 'delete', schema)
+            server_response = self.response_simulator.simulate_api_response(deleted_records, field_id, 'delete', schema)
         else:
             server_response = self._send_request(self.endpoints['delete'], payload)
 
