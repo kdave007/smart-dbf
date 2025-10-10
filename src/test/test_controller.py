@@ -105,7 +105,7 @@ def test():
     version = sql_id_manager.get_batch_version()
     
     # Initialize Operation class with API base URL
-    client_id = config.get('sucursal') + "_" + config.get('plaza')
+    client_id = config.get('plaza') + "_" + config.get('sucursal')
     api_base_url = "https://api.example.com/v1"  # Replace with your actual API URL
     operation = Operation(api_base_url, table, client_id, simulate_response=debug_mode)
     
@@ -121,7 +121,7 @@ def test():
     # Send new records
     if operations_obj['new']:
         print(f"Sending {len(operations_obj['new'])} new records...")
-        new_response = operation.send_new_records(operations_obj['new'], schema_type, field_id)
+        new_response = operation.send_new_records(operations_obj['new'], schema_type, field_id, version)
         print(f"New records response: {new_response}")
         
         # Track the response

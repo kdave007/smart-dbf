@@ -15,7 +15,7 @@ class Operation:
             'delete': f"{base_url}/{table_name}/delete"
         }
     
-    def send_new_records(self, new_records, schema, field_id):
+    def send_new_records(self, new_records, schema, field_id, version):
         """Envía registros nuevos a endpoint específico"""
         if not new_records:
             print("No hay registros nuevos para enviar")
@@ -28,7 +28,8 @@ class Operation:
             'schema': schema,
             'field_id': field_id,
             'table_name': self.table_name,
-            "client_id":self.client_id
+            "client_id":self.client_id,
+            "ver": version
         }
 
         print(f"SEND NEW : ",payload)
