@@ -13,9 +13,12 @@ from src.filters.filter_manager import FilterManager
 from src.utils.config_manager import ConfigManager
 from src.controllers.sql_references import SQLReferences
 from src.controllers.data_comparator import DataComparator
-from src.controllers.operation import Operation
+
 from src.controllers.sql_tracking_response import SQLTrackingResponse
 from src.utils.date_calculator import DateCalculator
+
+from src.controllers.operation import Operation
+# from src.controllers.operation_raw_og import Operation
 
 # Initialize logging
 logging = LoggingController.get_instance()
@@ -113,38 +116,44 @@ def test(table):
     print("SENDING OPERATIONS TO API")
     print("="*50)
     print(f"Schema: {schema_type}, Field ID: {field_id}")
+
+
+    from src.controllers.batch_processor import BatchProcessor
+
+    batch_pro = BatchProcessor(table, config_manager, sql_enabled)
+    batch_pro.process_all_operations(operations_obj, schema_type, field_id, version)
     
     # Send new records
-    if operations_obj['new']:
-        print(f"Sending {len(operations_obj['new'])} new records...")
-        new_response = operation.send_new_records(operations_obj['new'], schema_type, field_id, version)
-        print(f"New records response: {new_response}")
+    # if operations_obj['new']:
+    #     print(f"Sending {len(operations_obj['new'])} new records...")
+    #     new_response = operation.send_new_records(operations_obj['new'], schema_type, field_id, version)
+    #     print(f"New records response: {new_response}")
         
-        # Track the response
-        if sql_enabled:
-            tracking.post_insert_records_status(new_response, operations_obj['new'], field_id, version)
+    #     # Track the response
+    #     if sql_enabled:
+    #         tracking.post_insert_records_status(new_response, operations_obj['new'], field_id, version)
     
-    #Send updated records  
-    if operations_obj['changed']:
-        print(f"Sending {len(operations_obj['changed'])} updated records...")
-        update_response = operation.send_updates(operations_obj['changed'], schema_type, field_id)
-        print(f"Update response: {update_response}")
+    # #Send updated records  
+    # if operations_obj['changed']:
+    #     print(f"Sending {len(operations_obj['changed'])} updated records...")
+    #     update_response = operation.send_updates(operations_obj['changed'], schema_type, field_id)
+    #     print(f"Update response: {update_response}")
         
-        #Track the response
-        if sql_enabled:
-            tracking.post_update_records_status(update_response, operations_obj['changed'], field_id, version)
+    #     #Track the response
+    #     if sql_enabled:
+    #         tracking.post_update_records_status(update_response, operations_obj['changed'], field_id, version)
     
-    # Send deleted records
+    # # Send deleted records
     # if operations_obj['deleted']:
     #     print(f"Sending {len(operations_obj['deleted'])} deleted records...")
     #     delete_response = operation.send_deletes(operations_obj['deleted'], schema_type, field_id)
     #     print(f"Delete response: {delete_response}")
         
-        # Track the response
-        # if sql_enabled:
-        #     tracking.post_delete_records_status(delete_response, operations_obj['deleted'], field_id, version)
+    #     #Track the response
+    #     if sql_enabled:
+    #         tracking.post_delete_records_status(delete_response, operations_obj['deleted'], field_id, version)
     
-    print(f"Unchanged records ({len(operations_obj['unchanged'])}) - no action needed")
+    # print(f"Unchanged records ({len(operations_obj['unchanged'])}) - no action needed")
 
 
     """ TODO right now the process only sends the json records and expects an ok status with
@@ -153,9 +162,6 @@ def test(table):
         this is only for testing, we still miss the GET request to actually update the real status of 
         each record in the sqlite db
     """
-
-    
-
 
 def print_dbf_records(dbf_records, field_name, last_N):
     total_records = len(dbf_records)
@@ -200,10 +206,10 @@ if __name__ == "__main__":
     logging.info(spacing)
     logging.info(border)
 
-    print(f"                ******** Processing {table_1} ******")
-    test(table_1)
+    # print(f"                ******** Processing {table_1} ******")
+    # test(table_1)
 
-    print(f"                ******** Processing {table_2} ******")
+    # print(f"                ******** Processing {table_2} ******")
     test(table_2)
     
     print(f"                ******** Processing {table_3} ******")

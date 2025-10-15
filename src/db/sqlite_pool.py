@@ -44,7 +44,7 @@ class SQLiteConnectionPool:
                     self.pool.put(conn)
                     self.active_connections += 1
             
-            self.logger.info(f"SQLite pool initialized with {self.active_connections} connections")
+            print(f"SQLite pool initialized with {self.active_connections} connections")
             
         except Exception as e:
             self.logger.error(f"Error initializing SQLite pool: {str(e)}")

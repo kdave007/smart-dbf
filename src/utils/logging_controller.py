@@ -26,24 +26,26 @@ class LoggingController:
         self.logger = logging.getLogger('smart-dbf')
         self.logger.setLevel(self.log_level)
         
-        # Clear existing handlers
-        self.logger.handlers.clear()
+        # ✅ EVITAR DUPLICADOS - Solo configurar si no hay handlers
+        if not self.logger.handlers:
+            # Create formatter
+            formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                datefmt='%Y-%m-%d %H:%M:%S'
+            )
+            
+            # Console handler
+            console_handler = logging.StreamHandler(sys.stdout)
+            console_handler.setLevel(self.log_level)
+            console_handler.setFormatter(formatter)
+            self.logger.addHandler(console_handler)
+            
+            # File handler (if enabled)
+            if self.log_to_file:
+                self._setup_file_handler(formatter)
         
-        # Create formatter
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        )
-        
-        # Console handler
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setLevel(self.log_level)
-        console_handler.setFormatter(formatter)
-        self.logger.addHandler(console_handler)
-        
-        # File handler (if enabled)
-        if self.log_to_file:
-            self._setup_file_handler(formatter)
+        # ✅ EVITAR PROPAGACIÓN al root logger
+        self.logger.propagate = False
     
     def _setup_file_handler(self, formatter):
         """Setup file logging handler"""
@@ -61,9 +63,11 @@ class LoggingController:
             file_handler.setFormatter(formatter)
             self.logger.addHandler(file_handler)
             
+            # ✅ Usar self.logger en lugar de print
             self.logger.info(f"Logging to file: {log_file}")
             
         except Exception as e:
+            # ✅ Usar self.logger en lugar de print
             self.logger.warning(f"Could not setup file logging: {e}")
     
     def debug(self, message):

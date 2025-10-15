@@ -41,7 +41,7 @@ class Operation:
         ndjson_data = "\n".join(json.dumps(record, separators=(',', ':')) for record in new_records)
         
         # print(f" NDJSON SEND NEW: {(ndjson_data)}")
-        print(f"SEND UPDATES: {len(changed_records)} registros en formato NDJSON")
+        print(f"SEND UPDATES: {len(new_records)} registros en formato NDJSON")
 
         if self.simulate_response:
             print(f"//////  RESPONSE SIMULATION ///////")
