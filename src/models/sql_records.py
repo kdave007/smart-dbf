@@ -6,6 +6,7 @@ import sys
 from typing import Optional
 from src.db.sqlite_pool import SQLiteConnectionPool
 from src.utils.config_manager import ConfigManager
+from src.utils.logging_controller import LoggingController
 
 class SQLRecords:
     def __init__(self) -> None:
@@ -13,6 +14,7 @@ class SQLRecords:
         config_manager = ConfigManager.get_instance()
         self.db_name = config_manager.get_db_name()
         self.db_path = config_manager.get_full_db_path()
+        self.logging = LoggingController()
         
         # Initialize SQLite connection pool
         self.db_pool = SQLiteConnectionPool(self.db_path, pool_size=5)
@@ -100,7 +102,7 @@ class SQLRecords:
                     print(f"Warning: No {field_id} found in record __meta")
                     continue
                 
-                # Generic insert query - you can customize the fields here
+                # Generic insert query 
                 query = f"""
                     INSERT INTO {table_name} (
                         {field_id}, 
@@ -112,29 +114,29 @@ class SQLRecords:
                     ) VALUES (?, ?, ?, ?, ?, ?)
                 """
                 
-                params = (id_field_value, version_id, status, record['__meta']['hash_comparador'], delete_flag, waiting_id)
+                params = (id_field_value, version_id, status, record['__meta']['hash_comparador'], delete_flag, waiting_id)#TODO delete flag may not be usfeul here!
                 conn.execute(query, params)
                 insert_count += 1
             
             # Commit transaction
             conn.execute("COMMIT")
-            print(f"Successfully inserted {insert_count} records into {table_name}")
+            self.logging.info(f"Successfully inserted {insert_count} records into {table_name} batch cola id: {waiting_id}")
             return True
             
         except Exception as e:
             # Rollback transaction on error
             try:
                 conn.execute("ROLLBACK")
-                print(f"Transaction rolled back due to error: {str(e)}")
+                self.logging.error(f"Transaction rolled back due to error: {str(e)}")
             except Exception as rollback_error:
-                print(f"Error during rollback: {str(rollback_error)}")
+                self.logging.error(f"Error during rollback: {str(rollback_error)}")
             return False
             
         finally:
             # Return connection to pool
             self.db_pool.return_connection(conn)
 
-    def update_sent_data(self, table_name, records, field_id, version, delete_flag, waiting_id, status=1):
+    def update_sent_data(self, table_name, records, field_id, version, waiting_id, status=1):
         """Generic batch insert with transaction support"""
         if not records:
             print("No records to insert")
@@ -144,6 +146,51 @@ class SQLRecords:
         version_id = version.get('id') if isinstance(version, dict) else version
 
         conn = self.db_pool.get_connection()
+        try:
+            # Start transaction
+            conn.execute("BEGIN TRANSACTION")
+
+            update_count = 0
+            for record in records:
+                # Extract the field value from __meta
+                id_field_value = record.get('__meta', {}).get(field_id)
+                if id_field_value is None:
+                    print(f"Warning: No {field_id} found in record __meta")
+                    continue
+                
+                # Generic update query 
+                query = f"""
+                    UPDATE {table_name} 
+                    SET status = ?, 
+                        hash_comparador = ?,
+                        id_cola = ?
+                    WHERE {field_id} = ? AND batch_version = ?
+                """
+
+                # Orden correcto de parámetros:
+                # status, hash_comparador, id_cola, id_field_value, version_id
+                params = (status, record['__meta']['hash_comparador'], waiting_id, id_field_value, version_id)
+                conn.execute(query, params)
+                update_count += 1
+            
+            # Commit transaction
+                conn.execute("COMMIT")
+                self.logging.info(f"Successfully updated {update_count} records into {table_name} batch cola id: {waiting_id}")
+                return True
+                
+        except Exception as e:
+            # Rollback transaction on error
+            try:
+                conn.execute("ROLLBACK")
+                self.logging.error(f"sql records Transaction rolled back due to error: {str(e)}")
+            except Exception as rollback_error:
+                self.logging.error(f"Error during rollback: {str(rollback_error)}")
+            return False
+            
+        finally:
+            # Return connection to pool
+            self.db_pool.return_connection(conn)
+        
 
 
 

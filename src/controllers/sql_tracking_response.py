@@ -9,7 +9,7 @@ class SQLTrackingResponse:
         self.logging = LoggingController.get_instance()
     
     def process_api_response(self, api_response, records_sent, field_id, version, operation_type):
-        """Main method to process API response and insert tracking records"""
+        """Main method to process API response and insert or update tracking records"""
         if not api_response or not records_sent:
             self.logging.warning("No API response or records to process")
             return False
@@ -34,15 +34,31 @@ class SQLTrackingResponse:
             self.logging.info(f"Processing {operation_type} response - ID Cola: {id_cola}, Status: {status_id}")
             
             # Insert records with tracking information
-            success = self.sql_records.insert_sent_data(
-                table_name=self.table_name,
-                records=records_sent,
-                field_id=field_id,
-                version=version,
-                delete_flag=0,  # Not deleted yet even with delete operation
-                waiting_id=id_cola,
-                status=status_id  # Status from API response
-            )
+            success = False
+
+            if operation_type == "CREATE":
+                success = self.sql_records.insert_sent_data(
+                    table_name=self.table_name,
+                    records=records_sent,
+                    field_id=field_id,
+                    version=version,
+                    delete_flag=0,  # Not deleted yet even with delete operation
+                    waiting_id=id_cola,
+                    status=status_id  # Status from API response
+                )
+            
+            elif operation_type == "UPDATE":
+                success = self.sql_records.update_sent_data(
+                    table_name=self.table_name,
+                    records=records_sent,
+                    field_id=field_id,
+                    version=version,
+                    waiting_id=id_cola,
+                    status=status_id  # Status from API response
+                )
+
+            elif operation_type == "DELETE":
+                pass #TODO delete tracking update process pending
             
             if success:
                 self.logging.info(f"Successfully tracked {len(records_sent)} {operation_type} records with id_cola: {id_cola}")
