@@ -206,11 +206,11 @@ if __name__ == "__main__":
     logging.info(spacing)
     logging.info(border)
 
-    # print(f"                ******** Processing {table_1} ******")
-    # test(table_1)
+    print(f"                ******** PROCESSING {table_1} ******")
+    test(table_1)
 
-    # print(f"                ******** Processing {table_2} ******")
+    print(f"                ******** PROCESSING {table_2} ******")
     test(table_2)
     
-    print(f"                ******** Processing {table_3} ******")
+    print(f"                ******** PROCESSING {table_3} ******")
     test(table_3)
