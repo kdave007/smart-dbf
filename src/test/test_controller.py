@@ -15,43 +15,40 @@ from src.controllers.sql_references import SQLReferences
 from src.controllers.data_comparator import DataComparator
 from src.controllers.operation import Operation
 from src.controllers.sql_tracking_response import SQLTrackingResponse
+from src.utils.date_calculator import DateCalculator
 
 # Initialize logging
 logging = LoggingController.get_instance()
 
-def test():
-    print("main")
-    border = "*" * 80
-    spacing = "*" + " " * 78 + "*"
-    message = "*" + " " * 25 + "STARTING Smart DBF v1.0 " + " " * 25 + "*"
+def test(table):
+    
 
-    logging.info(border)
-    logging.info(spacing)
-    logging.info(message)
-    logging.info(spacing)
-    logging.info(border)
-
-    # Get data source from config manager
-   
-    config_manager = ConfigManager("ENV")
-    config = config_manager.get_combined_config("venue.json")
-    data_source = config.get('data_source')
+    # Initialize ConfigManager singleton - venue file name read from .env
+    config_manager = ConfigManager.initialize("ENV")
+    
+    # Now you can access config anywhere
+    data_source = config_manager.get_data_source()
+    venue_file_name = config_manager.venue_file_name
 
     # data_source = r"C:\Users\campo\Documents\dbf_encriptados\pospcp"
     
     controller = DBFData(
         data_source=data_source,
+        venue_file_name=venue_file_name,
         encrypted=False,
         encryption_password="X3WGTXG5QJZ6K9ZC4VO2"
     )
 
-    table="XCORTE"
-    # table="CANOTA"
-    # table="CUNOTA"
-    """ date format YYYY MM DD """
-    # date_range={"from": "2025-01-22", "to": "2025-01-22"}
-    date_range={"from": "2025-09-25", "to": "2025-09-30"}
-    # date_range={"from": "2025-09-25", "to": "2025-09-25"}
+   
+    
+
+    """ date format YYYY-MM-DD (API format) """
+    # Get date range from .env file
+    date_calc = DateCalculator()
+    date_range = date_calc.get_date_range_from_env(output_format="api")
+    logging.info(f"Date range from .env: {date_range}")
+
+    # sys.exit()
     
     dbf_records = controller.get(table, date_range)
     print(f"dbf_recordss {len(dbf_records)}")
@@ -65,8 +62,7 @@ def test():
     # Get the identifier field for this table
     field_name = table_rules.get('identifier_field')
     
-    # Get configuration values
-    config_manager = ConfigManager("env")  # Use environment variables
+    # Get configuration values (reuse the same config_manager from above)
     sql_enabled = config_manager.get_sql_enabled()
     debug_mode = config_manager.get_debug_mode()
 
@@ -105,9 +101,9 @@ def test():
     version = sql_id_manager.get_batch_version()
     
     # Initialize Operation class with API base URL
-    client_id = config.get('plaza') + "_" + config.get('sucursal')
-    api_base_url = "https://api.example.com/v1"  # Replace with your actual API URL
-    operation = Operation(api_base_url, table, client_id, simulate_response=debug_mode)
+    client_id = config_manager.config.get('plaza') + "_" + config_manager.config.get('sucursal')
+    
+    operation = Operation(config_manager.config, table, client_id, simulate_response=debug_mode)
     
     # Initialize SQL Tracking Response
     tracking = SQLTrackingResponse(table)
@@ -128,15 +124,15 @@ def test():
         if sql_enabled:
             tracking.post_insert_records_status(new_response, operations_obj['new'], field_id, version)
     
-    # Send updated records  
-    # if operations_obj['changed']:
-    #     print(f"Sending {len(operations_obj['changed'])} updated records...")
-    #     update_response = operation.send_updates(operations_obj['changed'], schema_type, field_id)
-    #     print(f"Update response: {update_response}")
+    #Send updated records  
+    if operations_obj['changed']:
+        print(f"Sending {len(operations_obj['changed'])} updated records...")
+        update_response = operation.send_updates(operations_obj['changed'], schema_type, field_id)
+        print(f"Update response: {update_response}")
         
-        # Track the response
-        # if sql_enabled:
-        #     tracking.post_update_records_status(update_response, operations_obj['changed'], field_id, version)
+        #Track the response
+        if sql_enabled:
+            tracking.post_update_records_status(update_response, operations_obj['changed'], field_id, version)
     
     # Send deleted records
     # if operations_obj['deleted']:
@@ -189,4 +185,26 @@ def print_sql_references(sql_records, last_N):
 
 
 if __name__ == "__main__":
-    test()
+    table_1="XCORTE"
+    table_2="CANOTA"
+    table_3= "CUNOTA"
+
+    print("main")
+    border = "*" * 80
+    spacing = "*" + " " * 78 + "*"
+    message = "*" + " " * 25 + "STARTING Smart DBF v1.0 " + " " * 25 + "*"
+
+    logging.info(border)
+    logging.info(spacing)
+    logging.info(message)
+    logging.info(spacing)
+    logging.info(border)
+
+    # print(f"                ******** Processing {table_1} ******")
+    # test(table_1)
+
+    print(f"                ******** Processing {table_2} ******")
+    test(table_2)
+    
+    # print(f"                ******** Processing {table_3} ******")
+    # test(table_3)

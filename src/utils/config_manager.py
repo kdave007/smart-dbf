@@ -5,14 +5,70 @@ from typing import Dict, Any
 from src.utils.logging_controller import logging
 
 class ConfigManager:
-    def __init__(self, source):
+    _instance = None
+    
+    @classmethod
+    def get_instance(cls):
+        """Get singleton instance of ConfigManager"""
+        if cls._instance is None:
+            raise RuntimeError("ConfigManager not initialized. Call initialize() first.")
+        return cls._instance
+    
+    @classmethod
+    def initialize(cls, source, venue_file_name=None):
+        """Initialize the singleton instance with source and optional venue file"""
+        if cls._instance is None:
+            # If no venue_file_name provided, try to read from .env
+            if venue_file_name is None:
+                venue_file_name = cls._get_venue_file_from_env()
+            cls._instance = cls(source, venue_file_name)
+        return cls._instance
+    
+    @staticmethod
+    def _get_venue_file_from_env():
+        """Read VENUE_FILE_NAME from .env file"""
+        env_path = Path(__file__).parent.parent.parent / '.env'
+        
+        if not env_path.exists():
+            raise FileNotFoundError(f".env file not found at {env_path}")
+        
+        try:
+            with open(env_path, 'r', encoding='utf-8') as file:
+                for line in file:
+                    line = line.strip()
+                    
+                    # Skip empty lines and comments
+                    if not line or line.startswith('#'):
+                        continue
+                    
+                    # Parse key=value pairs
+                    if '=' in line:
+                        key, value = line.split('=', 1)
+                        key = key.strip()
+                        value = value.strip().strip('"')  # Remove quotes if present
+                        
+                        if key == 'VENUE_FILE_NAME':
+                            return value
+            
+            raise ValueError("VENUE_FILE_NAME not found in .env file")
+        except Exception as e:
+            raise Exception(f"Error reading VENUE_FILE_NAME from .env: {str(e)}")
+    
+    def __init__(self, source, venue_file_name=None):
         self.source = source  #API or ENV
         self.config = {}
+        self.venue_file_name = venue_file_name
+        
         # Load configuration on initialization
         if source.upper() == "ENV":
             self._from_env()
         elif source.upper() == "API":
             self._from_api()
+        
+        # Load venue file if provided
+        if venue_file_name:
+            venue_config = self.load_json_config(venue_file_name)
+            self.config.update(venue_config)
         
     def get_params(self) -> Dict[str, Any]:
         if self.source == "API":
@@ -139,4 +195,36 @@ class ConfigManager:
     def get_sql_enabled(self) -> bool:
         """Get SQL enabled flag from environment"""
         return bool(int(self.config.get('SQL_ENABLED', 0)))
+    
+    def get_sqlite_path(self) -> str:
+        """Get SQLite database directory path from configuration"""
+        return self.config.get('sqlite')
+    
+    def get_db_name(self) -> str:
+        """Get database name from sql_identifiers.json"""
+        sql_identifiers_path = Path(__file__).parent / 'sql_identifiers.json'
+        
+        if not sql_identifiers_path.exists():
+            logging.error(f"sql_identifiers.json not found at {sql_identifiers_path}")
+            raise FileNotFoundError(f"sql_identifiers.json not found")
+        
+        try:
+            with open(sql_identifiers_path, 'r', encoding='utf-8') as file:
+                sql_identifiers = json.load(file)
+                db_name = sql_identifiers.get('db', {}).get('name', 'dbf_test')
+                return db_name
+        except Exception as e:
+            logging.error(f"Error reading sql_identifiers.json: {str(e)}")
+            raise Exception(f"Error reading sql_identifiers.json: {str(e)}")
+    
+    def get_full_db_path(self) -> str:
+        """Get full SQLite database path (directory + db_name.db)"""
+        sqlite_dir = self.get_sqlite_path()
+        db_name = self.get_db_name()
+        
+        if not sqlite_dir:
+            raise ValueError("SQLite path not configured")
+        
+        full_path = Path(sqlite_dir) / f"{db_name}.db"
+        return str(full_path)
     

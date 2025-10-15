@@ -4,11 +4,12 @@ from src.utils.logging_controller import logging
 from pathlib import Path
 
 class DBFData:
-    def __init__(self, data_source, encrypted=False, encryption_password=None) -> None:
+    def __init__(self, data_source, venue_file_name, encrypted=False, encryption_password=None) -> None:
         self.data_source = data_source
         self.encrypted = encrypted
         self.encryption_password = encryption_password
         self.strategy_selector = StrategySelector()
+        self.venue_file_name = venue_file_name
         
         # Initialize configuration
         self.config_manager = ConfigManager("ENV")
@@ -18,7 +19,7 @@ class DBFData:
         """Load configuration from .env and venue.json files"""
         try:
             # Get combined configuration from .env and venue.json
-            self.config = self.config_manager.get_combined_config("venue.json")
+            self.config = self.config_manager.get_combined_config(self.venue_file_name)
             
             # Set configuration parameters using ConfigManager methods
             self.dll_path = self.config.get('dll_path')

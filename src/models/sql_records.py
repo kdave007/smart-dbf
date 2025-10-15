@@ -5,12 +5,14 @@ import os
 import sys
 from typing import Optional
 from src.db.sqlite_pool import SQLiteConnectionPool
+from src.utils.config_manager import ConfigManager
 
 class SQLRecords:
     def __init__(self) -> None:
-        # Simple database configuration
-        self.db_name = "dbf_test"  # From sql_identifiers.json
-        self.db_path = "C:\\Users\\campo\\Documents\\projects\\smart-dbf\\dbf_test.db"  # From venue.json + db_name
+        # Get database configuration from ConfigManager singleton
+        config_manager = ConfigManager.get_instance()
+        self.db_name = config_manager.get_db_name()
+        self.db_path = config_manager.get_full_db_path()
         
         # Initialize SQLite connection pool
         self.db_pool = SQLiteConnectionPool(self.db_path, pool_size=5)
@@ -131,6 +133,17 @@ class SQLRecords:
         finally:
             # Return connection to pool
             self.db_pool.return_connection(conn)
+
+    def update_sent_data(self, table_name, records, field_id, version, delete_flag, waiting_id, status=1):
+        """Generic batch insert with transaction support"""
+        if not records:
+            print("No records to insert")
+            return False
+        
+        # Extract version ID if it's a dictionary
+        version_id = version.get('id') if isinstance(version, dict) else version
+
+        conn = self.db_pool.get_connection()
 
 
 

@@ -2,17 +2,27 @@ import requests
 from ..utils.response_simulator import ResponseSimulator
 
 class Operation:
-    def __init__(self, base_url, table_name, client_id, simulate_response=False):
-        self.base_url = base_url
+    def __init__(self, config, table_name, client_id, simulate_response=False):
+        
         self.simulate_response = simulate_response
         self.response_simulator = ResponseSimulator()
         self.table_name = table_name
         self.client_id = client_id
+
+        base_url = config.get('POST_API_BASE')    
+        create = config.get('CREATE')
+        update = config.get('UPDATE')
+        delete = config.get('DELETE')
         
         self.endpoints = {
-            'new': f"{base_url}/{table_name}/new",
-            'update': f"{base_url}/{table_name}/update", 
-            'delete': f"{base_url}/{table_name}/delete"
+            'new': f"{base_url}/{create}",
+            'update': f"{base_url}/{update}", 
+            'delete': f"{base_url}/{delete}"
+        }
+        
+        api_key = config.get('testing_api_key')
+        self.headers = {
+            'x-api-key': str(api_key)
         }
     
     def send_new_records(self, new_records, schema, field_id, version):
@@ -20,6 +30,7 @@ class Operation:
         if not new_records:
             print("No hay registros nuevos para enviar")
             return
+    
             
         payload = {
             'operation': 'create',
@@ -54,7 +65,8 @@ class Operation:
             'count': len(changed_records),
             'schema': schema,
             'field_id': field_id,
-            'table_name': self.table_name
+            'table_name': self.table_name,
+            "client_id":self.client_id,
         }
         
         if self.simulate_response:
@@ -91,7 +103,7 @@ class Operation:
     def _send_request(self, url, payload):
         """Método interno para enviar requests"""
         try:
-            response = requests.post(url, json=payload, timeout=30)
+            response = requests.post(url, json=payload, headers=self.headers, timeout=30)
             response.raise_for_status()
             print(f"Enviados {payload['count']} registros a {url}")
             return response.json()
