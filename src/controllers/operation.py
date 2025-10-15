@@ -1,5 +1,6 @@
 import requests
 from ..utils.response_simulator import ResponseSimulator
+import json
 
 class Operation:
     def __init__(self, config, table_name, client_id, simulate_response=False):
@@ -22,7 +23,12 @@ class Operation:
         
         api_key = config.get('testing_api_key')
         self.headers = {
-            'x-api-key': str(api_key)
+            'x-api-key': str(api_key),
+            'Content-Type': 'application/json'  # Por defecto JSON
+        }
+        self.ndjson_headers = {
+            'x-api-key': str(api_key),
+            'Content-Type': 'text/plain'  # Para NDJSON
         }
     
     def send_new_records(self, new_records, schema, field_id, version):
@@ -31,25 +37,25 @@ class Operation:
             print("No hay registros nuevos para enviar")
             return
     
-            
-        payload = {
-            'operation': 'create',
-            'records': new_records,
-            'count': len(new_records),
-            'schema': schema,
-            'field_id': field_id,
-            'table_name': self.table_name,
-            "client_id":self.client_id,
-            "ver": version
-        }
-
-        print(f"SEND NEW : ",payload)
+        # Convertir a NDJSON
+        ndjson_data = "\n".join(json.dumps(record, separators=(',', ':')) for record in new_records)
+        
+        # print(f" NDJSON SEND NEW: {(ndjson_data)}")
+        print(f"SEND UPDATES: {len(changed_records)} registros en formato NDJSON")
 
         if self.simulate_response:
             print(f"//////  RESPONSE SIMULATION ///////")
             server_response = self.response_simulator.simulate_api_response(new_records, field_id, 'create', schema)
         else:
-            server_response = self._send_request(self.endpoints['new'], payload)
+            server_response = self._send_request_ndjson(
+                self.endpoints['new'], 
+                ndjson_data, 
+                'create', 
+                schema, 
+                field_id, 
+                version,
+                len(new_records)
+            )
 
         return server_response
     
@@ -59,21 +65,24 @@ class Operation:
             print("No hay registros para actualizar")
             return
             
-        payload = {
-            'operation': 'update', 
-            'records': changed_records,
-            'count': len(changed_records),
-            'schema': schema,
-            'field_id': field_id,
-            'table_name': self.table_name,
-            "client_id":self.client_id,
-        }
+        # Convertir a NDJSON
+        ndjson_data = "\n".join(json.dumps(record, separators=(',', ':')) for record in changed_records)
         
+        print(f"SEND UPDATES: {len(changed_records)} registros en formato NDJSON")
+
         if self.simulate_response:
             print(f"//////  RESPONSE SIMULATION ///////")
             server_response = self.response_simulator.simulate_api_response(changed_records, field_id, 'update', schema)
         else:
-            server_response = self._send_request(self.endpoints['update'], payload)
+            server_response = self._send_request_ndjson(
+                self.endpoints['update'], 
+                ndjson_data, 
+                'update', 
+                schema, 
+                field_id, 
+                None,
+                len(changed_records)
+            )
 
         return server_response
     
@@ -83,25 +92,63 @@ class Operation:
             print("No hay registros para eliminar")
             return
             
-        payload = {
-            'operation': 'delete',
-            'records': deleted_records, 
-            'count': len(deleted_records),
-            'schema': schema,
-            'field_id': field_id,
-            'table_name': self.table_name
-        }
+        # Convertir a NDJSON
+        ndjson_data = "\n".join(json.dumps(record, separators=(',', ':')) for record in deleted_records)
         
+        print(f"SEND DELETES: {len(deleted_records)} registros en formato NDJSON")
+
         if self.simulate_response:
             print(f"//////  RESPONSE SIMULATION ///////")
             server_response = self.response_simulator.simulate_api_response(deleted_records, field_id, 'delete', schema)
         else:
-            server_response = self._send_request(self.endpoints['delete'], payload)
+            server_response = self._send_request_ndjson(
+                self.endpoints['delete'], 
+                ndjson_data, 
+                'delete', 
+                schema, 
+                field_id, 
+                None,
+                len(deleted_records)
+            )
 
         return server_response
     
+    def _send_request_ndjson(self, url, ndjson_data, operation, schema, field_id, version, count):
+        """Método interno para enviar NDJSON"""
+        try:
+            # Parámetros para metadata
+            params = {
+                'operation': operation,
+                'schema': schema,
+                'field_id': field_id,
+                'table_name': self.table_name,
+                'client_id': self.client_id,
+                'count': count
+            }
+            
+            # Añadir version si existe
+            if version:
+                params['ver'] = version
+            
+            # Enviar como NDJSON (text/plain)
+            response = requests.post(
+                url,
+                data=ndjson_data,
+                headers=self.ndjson_headers,
+                params=params,
+                timeout=30
+            )
+            
+            response.raise_for_status()
+            print(f"✅ Enviados {count} registros a {url} (NDJSON)")
+            return response.json()
+            
+        except requests.exceptions.RequestException as e:
+            print(f"❌ Error enviando NDJSON a {url}: {e}")
+            return None
+    
     def _send_request(self, url, payload):
-        """Método interno para enviar requests"""
+        """Método original para compatibilidad (puedes eliminarlo luego)"""
         try:
             response = requests.post(url, json=payload, headers=self.headers, timeout=30)
             response.raise_for_status()

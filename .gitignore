@@ -96,6 +96,8 @@ art_m.json
 *.sqlite
 
 *.db
+*.db-wal
+*.db-shm
 dbf_test.db
 dbf_test.db-shm
 dbf_test.db-wal

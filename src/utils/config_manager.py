@@ -201,21 +201,14 @@ class ConfigManager:
         return self.config.get('sqlite')
     
     def get_db_name(self) -> str:
-        """Get database name from sql_identifiers.json"""
-        sql_identifiers_path = Path(__file__).parent / 'sql_identifiers.json'
+        """Get database name from .env file"""
+        db_name = self.config.get('DB_NAME')
         
-        if not sql_identifiers_path.exists():
-            logging.error(f"sql_identifiers.json not found at {sql_identifiers_path}")
-            raise FileNotFoundError(f"sql_identifiers.json not found")
+        if not db_name:
+            logging.error("DB_NAME not found in configuration")
+            raise ValueError("DB_NAME not found in .env file")
         
-        try:
-            with open(sql_identifiers_path, 'r', encoding='utf-8') as file:
-                sql_identifiers = json.load(file)
-                db_name = sql_identifiers.get('db', {}).get('name', 'dbf_test')
-                return db_name
-        except Exception as e:
-            logging.error(f"Error reading sql_identifiers.json: {str(e)}")
-            raise Exception(f"Error reading sql_identifiers.json: {str(e)}")
+        return db_name
     
     def get_full_db_path(self) -> str:
         """Get full SQLite database path (directory + db_name.db)"""
