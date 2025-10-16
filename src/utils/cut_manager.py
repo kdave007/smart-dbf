@@ -1,6 +1,6 @@
 from src.models.cut import Cut
 from src.db.sqlite_pool import SQLiteConnectionPool
-from src.utils.logging_controller import LoggingController
+import logging
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
@@ -17,7 +17,6 @@ class CutManager:
             db_pool: SQLiteConnectionPool instance for database operations
         """
         self.cut_model = Cut(db_pool)
-        self.logger = LoggingController.get_instance()
         
         # Ensure table exists
         self.cut_model.create_table()

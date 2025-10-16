@@ -1,6 +1,6 @@
 from src.utils.strategy_selector import StrategySelector
 from src.utils.config_manager import ConfigManager
-from src.utils.logging_controller import logging
+import logging
 from pathlib import Path
 
 class DBFData:

@@ -8,7 +8,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
 from src.controllers.dbf_data import DBFData
-from src.utils.logging_controller import LoggingController
+from src.utils.logging_controller import logging
 from src.filters.filter_manager import FilterManager
 from src.utils.config_manager import ConfigManager
 from src.controllers.sql_references import SQLReferences
@@ -19,12 +19,31 @@ from src.utils.date_calculator import DateCalculator
 
 from src.controllers.operation import Operation
 # from src.controllers.operation_raw_og import Operation
-
+import logging
 # Initialize logging
-logging = LoggingController.get_instance()
 
 def test(table):
+   
+    # Ruta donde estará el .exe
+    base_dir = Path.cwd()  # Directorio actual (donde está el .exe)
+    log_dir = base_dir / "logs"
+    log_dir.mkdir(exist_ok=True)
+    log_file = log_dir / "app.log"
     
+    # Configurar logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler(sys.stdout),
+            logging.FileHandler(log_file, encoding='utf-8')
+        ],
+        force=True  # ⚠️ IMPORTANTE: Sobrescribe configuración existente
+    )
+    
+    logging.info(f"✅ Logs guardados en: {log_file}")
+
+   
 
     # Initialize ConfigManager singleton - venue file name read from .env
     config_manager = ConfigManager.initialize("ENV")
@@ -77,7 +96,7 @@ def test(table):
     sql_references_manager = SQLReferences(table)
     sql_records = sql_references_manager._get_by_batches(dbf_records)
 
-    print(f" {sql_records}")
+    # print(f" {sql_records}")
 
     # print_sql_references(sql_records, 30)
     
@@ -122,38 +141,7 @@ def test(table):
 
     batch_pro = BatchProcessor(table, config_manager, sql_enabled)
     batch_pro.process_all_operations(operations_obj, schema_type, field_id, version)
-    
-    # Send new records
-    # if operations_obj['new']:
-    #     print(f"Sending {len(operations_obj['new'])} new records...")
-    #     new_response = operation.send_new_records(operations_obj['new'], schema_type, field_id, version)
-    #     print(f"New records response: {new_response}")
-        
-    #     # Track the response
-    #     if sql_enabled:
-    #         tracking.post_insert_records_status(new_response, operations_obj['new'], field_id, version)
-    
-    # #Send updated records  
-    # if operations_obj['changed']:
-    #     print(f"Sending {len(operations_obj['changed'])} updated records...")
-    #     update_response = operation.send_updates(operations_obj['changed'], schema_type, field_id)
-    #     print(f"Update response: {update_response}")
-        
-    #     #Track the response
-    #     if sql_enabled:
-    #         tracking.post_update_records_status(update_response, operations_obj['changed'], field_id, version)
-    
-    # # Send deleted records
-    # if operations_obj['deleted']:
-    #     print(f"Sending {len(operations_obj['deleted'])} deleted records...")
-    #     delete_response = operation.send_deletes(operations_obj['deleted'], schema_type, field_id)
-    #     print(f"Delete response: {delete_response}")
-        
-    #     #Track the response
-    #     if sql_enabled:
-    #         tracking.post_delete_records_status(delete_response, operations_obj['deleted'], field_id, version)
-    
-    # print(f"Unchanged records ({len(operations_obj['unchanged'])}) - no action needed")
+
 
 
     """ TODO right now the process only sends the json records and expects an ok status with

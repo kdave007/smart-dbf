@@ -6,7 +6,8 @@ import sys
 from typing import Optional
 from src.db.sqlite_pool import SQLiteConnectionPool
 from src.utils.config_manager import ConfigManager
-from src.utils.logging_controller import LoggingController
+import logging
+from datetime import datetime
 
 class SQLRecords:
     def __init__(self) -> None:
@@ -14,7 +15,6 @@ class SQLRecords:
         config_manager = ConfigManager.get_instance()
         self.db_name = config_manager.get_db_name()
         self.db_path = config_manager.get_full_db_path()
-        self.logging = LoggingController()
         
         # Initialize SQLite connection pool
         self.db_pool = SQLiteConnectionPool(self.db_path, pool_size=5)
@@ -120,16 +120,16 @@ class SQLRecords:
             
             # Commit transaction
             conn.execute("COMMIT")
-            self.logging.info(f"Successfully inserted {insert_count} records into {table_name} batch cola id: {waiting_id}")
+            logging.info(f"Successfully inserted {insert_count} records into {table_name} batch cola id: {waiting_id}")
             return True
             
         except Exception as e:
             # Rollback transaction on error
             try:
                 conn.execute("ROLLBACK")
-                self.logging.error(f"Transaction rolled back due to error: {str(e)}")
+                logging.error(f"Transaction rolled back due to error: {str(e)}")
             except Exception as rollback_error:
-                self.logging.error(f"Error during rollback: {str(rollback_error)}")
+                logging.error(f"Error during rollback: {str(rollback_error)}")
             return False
             
         finally:
@@ -144,6 +144,7 @@ class SQLRecords:
         
         # Extract version ID if it's a dictionary
         version_id = version.get('id') if isinstance(version, dict) else version
+        current_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         conn = self.db_pool.get_connection()
         try:
@@ -163,28 +164,30 @@ class SQLRecords:
                     UPDATE {table_name} 
                     SET status = ?, 
                         hash_comparador = ?,
-                        id_cola = ?
+                        id_cola = ?,
+                        ultima_revision = ?
                     WHERE {field_id} = ? AND batch_version = ?
                 """
 
                 # Orden correcto de parámetros:
                 # status, hash_comparador, id_cola, id_field_value, version_id
-                params = (status, record['__meta']['hash_comparador'], waiting_id, id_field_value, version_id)
+                
+                params = (status, record['__meta']['hash_comparador'], waiting_id, current_date, id_field_value, version_id)
                 conn.execute(query, params)
                 update_count += 1
             
             # Commit transaction
-                conn.execute("COMMIT")
-                self.logging.info(f"Successfully updated {update_count} records into {table_name} batch cola id: {waiting_id}")
-                return True
+            conn.execute("COMMIT")
+            logging.info(f"Successfully updated {update_count} records into {table_name} batch cola id: {waiting_id}")
+            return True
                 
         except Exception as e:
             # Rollback transaction on error
             try:
                 conn.execute("ROLLBACK")
-                self.logging.error(f"sql records Transaction rolled back due to error: {str(e)}")
+                logging.error(f"sql records Transaction rolled back due to error: {str(e)}")
             except Exception as rollback_error:
-                self.logging.error(f"Error during rollback: {str(rollback_error)}")
+                logging.error(f"Error during rollback: {str(rollback_error)}")
             return False
             
         finally:

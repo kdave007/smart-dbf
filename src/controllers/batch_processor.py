@@ -1,8 +1,7 @@
 from src.controllers.operation import Operation
 # from src.controllers.operation_raw_og import Operation
 from src.controllers.sql_tracking_response import SQLTrackingResponse
-from src.utils.logging_controller import LoggingController
-logging = LoggingController.get_instance()
+import logging
 
 class BatchProcessor:
     def __init__(self, table, config_manager, sql_enabled=False, batch_size=100):
@@ -72,7 +71,9 @@ class BatchProcessor:
             logging.info(f" Batch {batch_number}/{total_batches}: {len(batch)} records")
             
             # Send the batch
+           # print(f"[DEBUG] SEND batch {batch}")
             response = send_method(batch, schema_type, field_id, version) if operation_type == "new" else send_method(batch, schema_type, field_id)
+            print(f"[DEBUG] SEND RESPONSE {response}")
             
             # Check response
             if response and response.get('status') == 'ok':

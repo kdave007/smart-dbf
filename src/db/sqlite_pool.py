@@ -4,7 +4,7 @@ from queue import Queue, Empty
 from pathlib import Path
 from typing import Optional, Dict, Any
 from contextlib import contextmanager
-from src.utils.logging_controller import LoggingController
+import logging
 
 class SQLiteConnectionPool:
     """
@@ -27,7 +27,7 @@ class SQLiteConnectionPool:
         self.pool = Queue(maxsize=pool_size)
         self.active_connections = 0
         self.lock = threading.Lock()
-        self.logger = LoggingController.get_instance()
+     
         
         # Create database directory if it doesn't exist
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
@@ -47,7 +47,7 @@ class SQLiteConnectionPool:
             print(f"SQLite pool initialized with {self.active_connections} connections")
             
         except Exception as e:
-            self.logger.error(f"Error initializing SQLite pool: {str(e)}")
+            logging.error(f"Error initializing SQLite pool: {str(e)}")
             raise
     
     def _create_connection(self) -> Optional[sqlite3.Connection]:
@@ -71,7 +71,7 @@ class SQLiteConnectionPool:
             return conn
             
         except Exception as e:
-            self.logger.error(f"Error creating SQLite connection: {str(e)}")
+            logging.error(f"Error creating SQLite connection: {str(e)}")
             return None
     
     def get_connection(self) -> sqlite3.Connection:
@@ -94,7 +94,7 @@ class SQLiteConnectionPool:
                 return conn
             except sqlite3.Error:
                 # Connection is stale, create new one
-                self.logger.warning("Stale connection detected, creating new one")
+                logging.warning("Stale connection detected, creating new one")
                 conn.close()
                 new_conn = self._create_connection()
                 if new_conn:
@@ -139,7 +139,7 @@ class SQLiteConnectionPool:
                         self.active_connections -= 1
                         
         except Exception as e:
-            self.logger.error(f"Error returning connection to pool: {str(e)}")
+            logging.error(f"Error returning connection to pool: {str(e)}")
             if conn:
                 conn.close()
                 with self.lock:
@@ -221,7 +221,7 @@ class SQLiteConnectionPool:
     
     def close_all(self):
         """Close all connections in the pool."""
-        self.logger.info("Closing all SQLite pool connections")
+        logging.info("Closing all SQLite pool connections")
         
         # Close connections in pool
         while not self.pool.empty():
@@ -231,12 +231,12 @@ class SQLiteConnectionPool:
             except Empty:
                 break
             except Exception as e:
-                self.logger.error(f"Error closing pooled connection: {str(e)}")
+               logging.error(f"Error closing pooled connection: {str(e)}")
         
         with self.lock:
             self.active_connections = 0
         
-        self.logger.info("All SQLite pool connections closed")
+        logging.info("All SQLite pool connections closed")
     
     def get_pool_status(self) -> Dict[str, Any]:
         """

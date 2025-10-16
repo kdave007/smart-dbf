@@ -22,7 +22,7 @@ class LoggingController:
     
     def _setup_logging(self):
         """Setup logging configuration"""
-        # Create logger
+        # Create logger - ✅ AHORA usa el módulo logging importado
         self.logger = logging.getLogger('smart-dbf')
         self.logger.setLevel(self.log_level)
         
@@ -127,5 +127,5 @@ class LoggingController:
             cls._instance = cls(**kwargs)
         return cls._instance
 
-# Create a global logging instance for easy import
-logging = LoggingController.get_instance()
+# ✅ SOLUCIÓN: Cambia el nombre de la instancia global
+logger = LoggingController.get_instance()

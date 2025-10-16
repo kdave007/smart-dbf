@@ -1,0 +1,9 @@
+{
+    "sucursal": "SUCURSAL_NAME",
+    "plaza": "PLAZA_NAME",
+    "testing_api_key": "YOUR_API_KEY",
+    "config_endpoint": "https://api.example.com",
+    "dll_path": "C:\\path\\to\\Advantage.Data.Provider.dll",
+    "data_source": "C:\\path\\to\\dbf\\files",
+    "sqlite": "C:\\path\\to\\sqlite\\database"
+}

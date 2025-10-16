@@ -1,5 +1,5 @@
 from src.db.sqlite_pool import SQLiteConnectionPool
-from src.utils.logging_controller import LoggingController
+import logging
 from typing import List, Optional, Dict, Any
 
 class Cut:
@@ -15,7 +15,6 @@ class Cut:
             db_pool: SQLiteConnectionPool instance
         """
         self.db_pool = db_pool
-        self.logger = LoggingController.get_instance()
         self.table_name = "mapeo_cortes"
     
     def create_table(self) -> bool:
@@ -35,11 +34,11 @@ class Cut:
             """
             
             self.db_pool.execute_update(query)
-            self.logger.info("mapeo_cortes table created or already exists")
+            logging.info("mapeo_cortes table created or already exists")
             return True
             
         except Exception as e:
-            self.logger.error(f"Error creating mapeo_cortes table: {str(e)}")
+            logging.error(f"Error creating mapeo_cortes table: {str(e)}")
             return False
     
     def insert(self, corte_id: str, fecha_inicio: str) -> bool:
@@ -62,14 +61,14 @@ class Cut:
             rows_affected = self.db_pool.execute_update(query, (corte_id, fecha_inicio))
             
             if rows_affected > 0:
-                self.logger.info(f"Inserted cut '{corte_id}' starting on {fecha_inicio}")
+                logging.info(f"Inserted cut '{corte_id}' starting on {fecha_inicio}")
                 return True
             else:
-                self.logger.error(f"Failed to insert cut '{corte_id}'")
+                logging.error(f"Failed to insert cut '{corte_id}'")
                 return False
                 
         except Exception as e:
-            self.logger.error(f"Error inserting cut '{corte_id}': {str(e)}")
+            logging.error(f"Error inserting cut '{corte_id}': {str(e)}")
             return False
     
     def find_by_date(self, reference_date: str) -> Optional[Dict[str, Any]]:
@@ -95,14 +94,14 @@ class Cut:
             
             if results:
                 cut_data = dict(results[0])
-                self.logger.info(f"Found cut '{cut_data['corte_id']}' for date {reference_date}")
+                logging.info(f"Found cut '{cut_data['corte_id']}' for date {reference_date}")
                 return cut_data
             else:
-                self.logger.warning(f"No cut found for date {reference_date}")
+                logging.warning(f"No cut found for date {reference_date}")
                 return None
                 
         except Exception as e:
-            self.logger.error(f"Error finding cut for date {reference_date}: {str(e)}")
+            logging.error(f"Error finding cut for date {reference_date}: {str(e)}")
             return None
     
     def find_by_date_range(self, start_date: str, end_date: str) -> List[Dict[str, Any]]:
@@ -127,11 +126,11 @@ class Cut:
             results = self.db_pool.execute_query(query, (start_date, end_date))
             cuts = [dict(row) for row in results]
             
-            self.logger.info(f"Found {len(cuts)} cuts for date range {start_date} to {end_date}")
+            logging.info(f"Found {len(cuts)} cuts for date range {start_date} to {end_date}")
             return cuts
             
         except Exception as e:
-            self.logger.error(f"Error finding cuts for date range {start_date}-{end_date}: {str(e)}")
+            logging.error(f"Error finding cuts for date range {start_date}-{end_date}: {str(e)}")
             return []
     
     def find_by_id(self, corte_id: str) -> Optional[Dict[str, Any]]:
@@ -155,14 +154,14 @@ class Cut:
             
             if results:
                 cut_data = dict(results[0])
-                self.logger.info(f"Found cut '{corte_id}'")
+                logging.info(f"Found cut '{corte_id}'")
                 return cut_data
             else:
-                self.logger.warning(f"Cut '{corte_id}' not found")
+                logging.warning(f"Cut '{corte_id}' not found")
                 return None
                 
         except Exception as e:
-            self.logger.error(f"Error finding cut '{corte_id}': {str(e)}")
+            logging.error(f"Error finding cut '{corte_id}': {str(e)}")
             return None
     
     def get_all(self) -> List[Dict[str, Any]]:
@@ -182,11 +181,11 @@ class Cut:
             results = self.db_pool.execute_query(query)
             cuts = [dict(row) for row in results]
             
-            self.logger.info(f"Retrieved {len(cuts)} cuts")
+            logging.info(f"Retrieved {len(cuts)} cuts")
             return cuts
             
         except Exception as e:
-            self.logger.error(f"Error retrieving all cuts: {str(e)}")
+            logging.error(f"Error retrieving all cuts: {str(e)}")
             return []
     
     def delete_by_id(self, corte_id: str) -> bool:
@@ -204,12 +203,12 @@ class Cut:
             rows_affected = self.db_pool.execute_update(query, (corte_id,))
             
             if rows_affected > 0:
-                self.logger.info(f"Deleted cut '{corte_id}'")
+                logging.info(f"Deleted cut '{corte_id}'")
                 return True
             else:
-                self.logger.warning(f"Cut '{corte_id}' not found for deletion")
+                logging.warning(f"Cut '{corte_id}' not found for deletion")
                 return False
                 
         except Exception as e:
-            self.logger.error(f"Error deleting cut '{corte_id}': {str(e)}")
+            logging.error(f"Error deleting cut '{corte_id}': {str(e)}")
             return False

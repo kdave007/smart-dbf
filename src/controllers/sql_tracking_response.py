@@ -1,23 +1,22 @@
 
 from ..models.sql_records import SQLRecords
-from ..utils.logging_controller import LoggingController
+from ..utils.logging_controller import logging
 
 class SQLTrackingResponse:
     def __init__(self, table_name) -> None:
         self.table_name = table_name
         self.sql_records = SQLRecords()
-        self.logging = LoggingController.get_instance()
     
     def process_api_response(self, api_response, records_sent, field_id, version, operation_type):
         """Main method to process API response and insert or update tracking records"""
         if not api_response or not records_sent:
-            self.logging.warning("No API response or records to process")
+            logging.warning("No API response or records to process")
             return False
         
         # Check if API call was successful
         if api_response.get('status_code') != 200:
-            self.logging.error(f"API call failed with status: {api_response.get('status_code')}")
-            self.logging.error(f"Error: {api_response.get('msg', 'Unknown error')}")
+            logging.error(f"API call failed with status: {api_response.get('status_code')}")
+            logging.error(f"Error: {api_response.get('msg', 'Unknown error')}")
             return False
         
         # Match response with sent records and insert tracking data
@@ -31,7 +30,7 @@ class SQLTrackingResponse:
             id_cola = api_resp.get('id_cola')
             status_id = api_resp.get('status_id', 1)  # Default to 1 if not provided
             
-            self.logging.info(f"Processing {operation_type} response - ID Cola: {id_cola}, Status: {status_id}")
+            logging.info(f"Processing {operation_type} response - ID Cola: {id_cola}, Status: {status_id}")
             
             # Insert records with tracking information
             success = False
@@ -61,14 +60,14 @@ class SQLTrackingResponse:
                 pass #TODO delete tracking update process pending
             
             if success:
-                self.logging.info(f"Successfully tracked {len(records_sent)} {operation_type} records with id_cola: {id_cola}")
+                logging.info(f"Successfully tracked {len(records_sent)} {operation_type} records with id_cola: {id_cola}")
             else:
-                self.logging.error(f"Failed to track {operation_type} records")
+                logging.error(f"Failed to track {operation_type} records")
                 
             return success
             
         except Exception as e:
-            self.logging.error(f"Error matching batch and response: {str(e)}")
+            logging.error(f"Error matching batch and response: {str(e)}")
             return False
 
     def post_insert_records_status(self, api_response, new_records, field_id, version):
