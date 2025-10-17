@@ -435,11 +435,11 @@ class ConfigManager:
         return combined_config
     
     def get_mapping_file_path(self) -> str:
-        """Get mapping file path from utils directory"""
-        base_path = self._get_base_path()
+        """Get mapping file path - INTERNAL in exe"""
         if getattr(sys, 'frozen', False):
-            # En producción, busca en el mismo directorio del EXE
-            mapping_file = base_path / "mappings.json"
+            # En producción, el archivo está dentro del EXE
+            base_path = Path(sys._MEIPASS) if hasattr(sys, '_MEIPASS') else Path(sys.executable).parent
+            mapping_file = base_path / "src/utils/mappings.json"
         else:
             # En desarrollo, busca en utils
             utils_dir = Path(__file__).parent
@@ -447,11 +447,11 @@ class ConfigManager:
         return str(mapping_file) if mapping_file.exists() else None
     
     def get_filters_file_path(self) -> str:
-        """Get filters file path from utils directory"""
-        base_path = self._get_base_path()
+        """Get filters file path - INTERNAL in exe"""
         if getattr(sys, 'frozen', False):
-            # En producción, busca en el mismo directorio del EXE
-            filters_file = base_path / "rules.json"
+            # En producción, el archivo está dentro del EXE
+            base_path = Path(sys._MEIPASS) if hasattr(sys, '_MEIPASS') else Path(sys.executable).parent
+            filters_file = base_path / "src/utils/rules.json"
         else:
             # En desarrollo, busca en utils
             utils_dir = Path(__file__).parent

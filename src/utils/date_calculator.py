@@ -1,11 +1,22 @@
 from datetime import datetime, timedelta
 import calendar
 from pathlib import Path
+import sys
+import logging
 
 class DateCalculator:
     def __init__(self):
         self.date_format = "%Y %m %d"
         self.api_date_format = "%Y-%m-%d"
+    
+    def _get_base_path(self):
+        """Get base path for exe or development environment - SAME AS CONFIGMANAGER"""
+        if getattr(sys, 'frozen', False):
+            # Running as exe - ALWAYS use exe directory (external)
+            return Path(sys.executable).parent
+        else:
+            # Running in development - use project root
+            return Path(__file__).parent.parent.parent
     
     def get_current_date(self):
         """Obtiene la fecha actual en formato YYYY MM DD"""
@@ -99,9 +110,17 @@ class DateCalculator:
         Returns:
             dict: {"from": start_date, "to": end_date} en el formato especificado
         """
-        env_path = Path(__file__).parent.parent.parent / '.env'
+        # USAR LA MISMA LÓGICA DE RUTAS QUE CONFIGMANAGER
+        base_path = self._get_base_path()
+        env_path = base_path / '.env'
+        
+        print(f"🔍 DateCalculator searching for .env at: {env_path}")
         
         if not env_path.exists():
+            # List available files for debugging
+            available_files = list(base_path.glob('*'))
+            logging.error(f".env file not found at {env_path}")
+            logging.error(f"Available files in {base_path}: {[f.name for f in available_files]}")
             raise FileNotFoundError(f".env file not found at {env_path}")
         
         start_date = None
@@ -162,15 +181,18 @@ class DateCalculator:
         
         # Format output based on requested format
         if output_format == "api":
-            return {
+            result = {
                 "from": start_date_obj.strftime(self.api_date_format),
                 "to": end_date_obj.strftime(self.api_date_format)
             }
         else:
-            return {
+            result = {
                 "from": start_date_obj.strftime(self.date_format),
                 "to": end_date_obj.strftime(self.date_format)
             }
+        
+        print(f"✅ DateCalculator loaded date range: {result}")
+        return result
 
 # Ejemplo de uso
 if __name__ == "__main__":
@@ -204,3 +226,10 @@ if __name__ == "__main__":
     # 6. Rango personalizado sin fecha fin (usa actual)
     start, end = calculator.get_custom_range(custom_start)
     print(f"Rango personalizado sin fin: Start={start}, End={end}")
+    
+    # 7. Probar lectura desde .env
+    try:
+        date_range = calculator.get_date_range_from_env()
+        print(f"Rango desde .env: {date_range}")
+    except Exception as e:
+        print(f"Error leyendo .env: {e}")

@@ -5,7 +5,7 @@ a = Analysis(
     ['src\\test\\test_controller.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('src/utils/data_tables_schemas.json', 'src/utils'), ('src/utils/mappings.json', 'src/utils'), ('src/utils/rules.json', 'src/utils'), ('src/utils/sql_identifiers.json', 'src/utils')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
