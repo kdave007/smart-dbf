@@ -23,57 +23,42 @@ import logging
 # Initialize logging
 
 def test(table):
-   
-    # Ruta donde estará el .exe
-    base_dir = Path.cwd()  # Directorio actual (donde está el .exe)
-    log_dir = base_dir / "logs"
-    log_dir.mkdir(exist_ok=True)
-    log_file = log_dir / "app.log"
-    
-    # Configurar logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler(sys.stdout),
-            logging.FileHandler(log_file, encoding='utf-8')
-        ],
-        force=True  # ⚠️ IMPORTANTE: Sobrescribe configuración existente
-    )
-    
-    logging.info(f"✅ Logs guardados en: {log_file}")
 
-   
-
-    # Initialize ConfigManager singleton - venue file name read from .env
     config_manager = ConfigManager.initialize("ENV")
+    
     
     # Now you can access config anywhere
     data_source = config_manager.get_data_source()
     venue_file_name = config_manager.venue_file_name
-
-    # data_source = r"C:\Users\campo\Documents\dbf_encriptados\pospcp"
+    client_id = config_manager.config.get('plaza') + "_" + config_manager.config.get('sucursal')
+    sql_enabled = config_manager.get_sql_enabled()
+    debug_mode = config_manager.get_debug_mode()
     
     controller = DBFData(
         data_source=data_source,
         venue_file_name=venue_file_name,
         encrypted=False,
-        encryption_password="X3WGTXG5QJZ6K9ZC4VO2"
+        encryption_password="X"
     )
 
-   
-    
+    logging.info(f"                /////////////////////////////////////////////////////////////////////////")
+    logging.info(f"                                 [ {table} :: {client_id} ]")
+    logging.info(f"                /////////////////////////////////////////////////////////////////////////")
 
+    logging.info(f"SQL enabled: {sql_enabled}")
+    logging.info(f"Debug mode: {debug_mode}")
+
+   
     """ date format YYYY-MM-DD (API format) """
     # Get date range from .env file
     date_calc = DateCalculator()
     date_range = date_calc.get_date_range_from_env(output_format="api")
     logging.info(f"Date range from .env: {date_range}")
-
-    # sys.exit()
     
     dbf_records = controller.get(table, date_range)
-    print(f"dbf_recordss {len(dbf_records)}")
+    logging.info(f"total dbf_records fetched for {table} : {len(dbf_records)}")
+
+    # sys.exit()
 
     # Get field name from rules.json based on table name
     filter_manager = FilterManager(controller.filters_file_path)
@@ -85,19 +70,12 @@ def test(table):
     field_name = table_rules.get('identifier_field')
     
     # Get configuration values (reuse the same config_manager from above)
-    sql_enabled = config_manager.get_sql_enabled()
-    debug_mode = config_manager.get_debug_mode()
-
-    print(f"SQL enabled: {sql_enabled}")
-    print(f"Debug mode: {debug_mode}")
     
     print_dbf_records(dbf_records, field_name, 30)
     
     sql_references_manager = SQLReferences(table)
     sql_records = sql_references_manager._get_by_batches(dbf_records)
-
     # print(f" {sql_records}")
-
     # print_sql_references(sql_records, 30)
     
     comparator = DataComparator(table)
@@ -106,10 +84,13 @@ def test(table):
         sql_records
     )
 
-    print(f"New: {len(operations_obj['new'])}")
-    print(f"Changed: {len(operations_obj['changed'])}")
-    print(f"Unchanged: {len(operations_obj['unchanged'])}") 
-    print(f"Deleted: {len(operations_obj['deleted'])}")
+    logging.info(f"      Table status operations {table}: ")
+    logging.info(f"------- New: {len(operations_obj['new'])}")
+    logging.info(f"------- update: {len(operations_obj['changed'])}")
+    logging.info(f"------- Unchanged: {len(operations_obj['unchanged'])}") 
+    logging.info(f"------- Deleted: {len(operations_obj['deleted'])}")
+
+    
 
     # Get schema and field_id for API operations
     from src.utils.sql_identifiers_manager import SQLIdentifiersManager
@@ -122,14 +103,6 @@ def test(table):
     field_id = data_table_schema_manager.get_id_field_name(schema_type)
     version = sql_id_manager.get_batch_version()
     
-    # Initialize Operation class with API base URL
-    client_id = config_manager.config.get('plaza') + "_" + config_manager.config.get('sucursal')
-    
-    operation = Operation(config_manager.config, table, client_id, simulate_response=debug_mode)
-    
-    # Initialize SQL Tracking Response
-    tracking = SQLTrackingResponse(table)
-    
     # Send operations to API endpoints
     print("\n" + "="*50)
     print("SENDING OPERATIONS TO API")
@@ -140,16 +113,18 @@ def test(table):
     from src.controllers.batch_processor import BatchProcessor
 
     batch_pro = BatchProcessor(table, config_manager, sql_enabled)
-    batch_pro.process_all_operations(operations_obj, schema_type, field_id, version)
-
-
-
+    results = batch_pro.process_all_operations(operations_obj, schema_type, field_id, version)
+    
+    logging.info(f" Table {table} processing completed")
+    
     """ TODO right now the process only sends the json records and expects an ok status with
         an array of the records processed statuses and queu id, and sets the sql db status to 2
         and when we query the sql references, we avoid status 2 cause its been processing by the server
         this is only for testing, we still miss the GET request to actually update the real status of 
         each record in the sqlite db
     """
+    
+    return results
 
 def print_dbf_records(dbf_records, field_name, last_N):
     total_records = len(dbf_records)
@@ -178,15 +153,43 @@ def print_sql_references(sql_records, last_N):
        print("\nNo SQL records found in database")
 
 
+def setup_logging():
+    base_dir = Path.cwd()  
+    log_dir = base_dir / "logs"
+    log_dir.mkdir(exist_ok=True)
+
+    current_date_log = datetime.now().strftime("%d_%m_%Y")  
+    log_file = log_dir / f"SDBF_{current_date_log}.log"
+    
+    # Configurar logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler(sys.stdout),
+            logging.FileHandler(log_file, encoding='utf-8')
+        ],
+        force=True  # ⚠️ IMPORTANTE: Sobrescribe configuración existente
+    )
+    
+    logging.info(f"Logs saved in : {log_file}")
+
+
 if __name__ == "__main__":
+
+    setup_logging()
+
     table_1="XCORTE"
     table_2="CANOTA"
-    table_3= "CUNOTA"
+    table_3="CUNOTA"
+
+    
 
     print("main")
     border = "*" * 80
     spacing = "*" + " " * 78 + "*"
     message = "*" + " " * 25 + "STARTING Smart DBF v1.0 " + " " * 25 + "*"
+
 
     logging.info(border)
     logging.info(spacing)
@@ -194,11 +197,43 @@ if __name__ == "__main__":
     logging.info(spacing)
     logging.info(border)
 
-    print(f"                ******** PROCESSING {table_1} ******")
-    test(table_1)
-
-    print(f"                ******** PROCESSING {table_2} ******")
-    test(table_2)
     
-    print(f"                ******** PROCESSING {table_3} ******")
-    test(table_3)
+    # Process all tables and collect results
+    all_results = {}
+    
+    all_results[table_1] = test(table_1)
+    all_results[table_2] = test(table_2)
+    all_results[table_3] = test(table_3)
+    
+    # Log aggregated results for all tables
+    logging.info("="*80)
+    logging.info("FINAL PROCESSING RESULTS SUMMARY - ALL TABLES")
+    logging.info("="*80)
+    
+    for table_name, results in all_results.items():
+        logging.info(f"--- TABLE: {table_name} ---")
+        
+        if results['new']:
+            logging.info(f"  NEW:")
+            logging.info(f"    - Total records: {results['new']['total_records']}")
+            logging.info(f"    - Batches: {results['new']['successful_batches']}/{results['new']['total_batches']} successful")
+            logging.info(f"    - Success rate: {results['new']['success_rate']}%")
+        
+        if results['updated']:
+            logging.info(f"  UPDATED:")
+            logging.info(f"    - Total records: {results['updated']['total_records']}")
+            logging.info(f"    - Batches: {results['updated']['successful_batches']}/{results['updated']['total_batches']} successful")
+            logging.info(f"    - Success rate: {results['updated']['success_rate']}%")
+        
+        if results['deleted']:
+            logging.info(f"  DELETED:")
+            logging.info(f"    - Total records: {results['deleted']['total_records']}")
+            logging.info(f"    - Batches: {results['deleted']['successful_batches']}/{results['deleted']['total_batches']} successful")
+            logging.info(f"    - Success rate: {results['deleted']['success_rate']}%")
+        
+        if results['unchanged']:
+            logging.info(f"  UNCHANGED: {results['unchanged']} records")
+    
+    logging.info("="*80)
+    logging.info(" ALL TABLES PROCESSED ")
+    logging.info("="*80)

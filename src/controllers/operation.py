@@ -1,6 +1,8 @@
+import logging
 import requests
 from ..utils.response_simulator import ResponseSimulator
 import json
+import sys
 
 class Operation:
     def __init__(self, config, table_name, client_id, simulate_response=False):
@@ -41,10 +43,10 @@ class Operation:
         ndjson_data = "\n".join(json.dumps(record, separators=(',', ':')) for record in new_records)
         
         # print(f" NDJSON SEND NEW: {(ndjson_data)}")
-        print(f"SEND UPDATES: {len(new_records)} registros en formato NDJSON")
+        logging.info(f"-- Post request  : {len(new_records)} registros en formato NDJSON")
 
         if self.simulate_response:
-            print(f"//////  RESPONSE SIMULATION ///////")
+            logging.info(f"  [ RESPONSE SIMULATION ] ")
             server_response = self.response_simulator.simulate_api_response(new_records, field_id, 'create', schema)
         else:
             server_response = self._send_request_ndjson(
@@ -68,10 +70,12 @@ class Operation:
         # Convertir a NDJSON
         ndjson_data = "\n".join(json.dumps(record, separators=(',', ':')) for record in changed_records)
         
-        print(f"SEND UPDATES: {len(changed_records)} registros en formato NDJSON")
+        logging.info(f"-- Post request : {len(changed_records)} registros en formato NDJSON")
+        print(f" UDPATE ____ { changed_records }")
+        
 
         if self.simulate_response:
-            print(f"//////  RESPONSE SIMULATION ///////")
+            logging.info(f"  [ RESPONSE SIMULATION ] ")
             server_response = self.response_simulator.simulate_api_response(changed_records, field_id, 'update', schema)
         else:
             server_response = self._send_request_ndjson(
@@ -95,10 +99,10 @@ class Operation:
         # Convertir a NDJSON
         ndjson_data = "\n".join(json.dumps(record, separators=(',', ':')) for record in deleted_records)
         
-        print(f"SEND DELETES: {len(deleted_records)} registros en formato NDJSON")
+        logging.info(f"-- Post request : {len(deleted_records)} registros en formato NDJSON")
 
         if self.simulate_response:
-            print(f"//////  RESPONSE SIMULATION ///////")
+            logging.info(f"  [ RESPONSE SIMULATION ] ")
             server_response = self.response_simulator.simulate_api_response(deleted_records, field_id, 'delete', schema)
         else:
             server_response = self._send_request_ndjson(
@@ -140,11 +144,11 @@ class Operation:
             )
             
             response.raise_for_status()
-            print(f"✅ Enviados {count} registros a {url} (NDJSON)")
+            logging.info(f" Enviados {count} registros a {url} (NDJSON)")
             return response.json()
             
         except requests.exceptions.RequestException as e:
-            print(f"❌ Error enviando NDJSON a {url}: {e}")
+            logging.error(f" Error enviando NDJSON a {url}: {e}")
             return None
     
     def _send_request(self, url, payload):
@@ -155,5 +159,5 @@ class Operation:
             print(f"Enviados {payload['count']} registros a {url}")
             return response.json()
         except requests.exceptions.RequestException as e:
-            print(f"Error enviando a {url}: {e}")
+            logging.error(f"Error enviando a {url}: {e}")
             return None

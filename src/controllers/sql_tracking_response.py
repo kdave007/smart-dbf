@@ -30,7 +30,7 @@ class SQLTrackingResponse:
             id_cola = api_resp.get('id_cola')
             status_id = api_resp.get('status_id', 1)  # Default to 1 if not provided
             
-            logging.info(f"Processing {operation_type} response - ID Cola: {id_cola}, Status: {status_id}")
+            logging.info(f"-- SQL lite :: Processing {operation_type} response - ID Cola: {id_cola}, Status: {status_id}")
             
             # Insert records with tracking information
             success = False
@@ -60,9 +60,9 @@ class SQLTrackingResponse:
                 pass #TODO delete tracking update process pending
             
             if success:
-                logging.info(f"Successfully tracked {len(records_sent)} {operation_type} records with id_cola: {id_cola}")
+                logging.info(f"-- Successfully tracked {len(records_sent)} {operation_type} records with (batch) id_cola: {id_cola}")
             else:
-                logging.error(f"Failed to track {operation_type} records")
+                logging.error(f"-- Failed to track {operation_type} records")
                 
             return success
             

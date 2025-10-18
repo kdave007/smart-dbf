@@ -28,7 +28,7 @@ class SQLRecords:
         all_results = {}
         id_values = [record['__meta'][id_field_name] for record in records if '__meta' in record and id_field_name in record['__meta']]
         
-        print(f"SQL Processing {len(id_values)} IDs in batches of {batch_size}")
+        print(f"-- SQL Processing {len(id_values)} IDs in batches of {batch_size}")
 
         # print(id_values)
         
@@ -120,16 +120,16 @@ class SQLRecords:
             
             # Commit transaction
             conn.execute("COMMIT")
-            logging.info(f"Successfully inserted {insert_count} records into {table_name} batch cola id: {waiting_id}")
+            logging.info(f"-- Successfully inserted {insert_count} records into {table_name} batch cola id: {waiting_id}")
             return True
             
         except Exception as e:
             # Rollback transaction on error
             try:
                 conn.execute("ROLLBACK")
-                logging.error(f"Transaction rolled back due to error: {str(e)}")
+                logging.error(f"-- Transaction rolled back due to error: {str(e)}")
             except Exception as rollback_error:
-                logging.error(f"Error during rollback: {str(rollback_error)}")
+                logging.error(f"-- Error during rollback: {str(rollback_error)}")
             return False
             
         finally:
@@ -178,16 +178,16 @@ class SQLRecords:
             
             # Commit transaction
             conn.execute("COMMIT")
-            logging.info(f"Successfully updated {update_count} records into {table_name} batch cola id: {waiting_id}")
+            logging.info(f"-- Successfully updated {update_count} records into {table_name} batch cola id: {waiting_id}")
             return True
                 
         except Exception as e:
             # Rollback transaction on error
             try:
                 conn.execute("ROLLBACK")
-                logging.error(f"sql records Transaction rolled back due to error: {str(e)}")
+                logging.error(f"-- sql records Transaction rolled back due to error: {str(e)}")
             except Exception as rollback_error:
-                logging.error(f"Error during rollback: {str(rollback_error)}")
+                logging.error(f"-- Error during rollback: {str(rollback_error)}")
             return False
             
         finally:
