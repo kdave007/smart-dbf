@@ -16,6 +16,7 @@ from src.controllers.data_comparator import DataComparator
 
 from src.controllers.sql_tracking_response import SQLTrackingResponse
 from src.utils.date_calculator import DateCalculator
+from src.utils.validate_location_client import ValidateLocationClient
 
 from src.controllers.operation import Operation
 # from src.controllers.operation_raw_og import Operation
@@ -68,6 +69,25 @@ def test(table):
     
     # Get the identifier field for this table
     field_name = table_rules.get('identifier_field')
+
+
+    validate_loc_params = table_rules.get('validate_location')
+    reference = config_manager.config.get('sucursal')
+
+    if dbf_records and reference and validate_loc_params:
+        from src.utils.validate_location_client import ValidateLocationClient
+        validate_client = ValidateLocationClient()
+        valid_result = validate_client.check(reference, dbf_records, validate_loc_params.get('field_name'), validate_loc_params.get('exceptions'))
+
+        if valid_result.get('error'):
+            logging.error(f"THIS DBF CLIENT DOES NOT CORRESPOND TO THE SET LOCATION :: Sucursal = {reference} - DBF = { valid_result.get('client_found')}")
+            return {
+                "new": None,
+                "updated": None,
+                "deleted": None,
+                "unchanged": None
+            }
+
     
     # Get configuration values (reuse the same config_manager from above)
     

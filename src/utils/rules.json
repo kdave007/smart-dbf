@@ -75,7 +75,11 @@
                 "enabled":1
             }
         },
-        "strategy":"simple"
+        "strategy":"simple",
+        "validate_location":{
+            "field_name":"TIENDA",
+            "exceptions":0
+        }
     },
     "CUNOTA": {
         "identifier_field":"NOTA_FOLIO",
@@ -92,7 +96,11 @@
              "fields":["NOTA_FOLIO","NOTA_FECHA"], 
              "related_table": "CANOTA" 
             },
-        "strategy":"composed"
+        "strategy":"composed",
+        "validate_location":{
+            "field_name":"TIENDA",
+            "exceptions":0
+        }
     },
     "XCORTE": {
         "identifier_field":"FECHA",
@@ -103,6 +111,10 @@
                 "condition":"between",
                 "enabled":1
             }
+        },
+        "validate_location":{
+            "field_name":"TIENDA",
+            "exceptions":0
         }
     }
 }
