@@ -67,6 +67,7 @@
     },
     "CANOTA": {
         "identifier_field":"NOTA_FOLIO",
+        "date_field":"NOTA_FECHA",
         "filters": {
             "date": {
                 "field": "NOTA_FECHA",
@@ -82,6 +83,7 @@
         }
     },
     "CUNOTA": {
+        "date_field":"NOTA_FECHA",
         "identifier_field":"NOTA_FOLIO",
         "filters": {
             "value":{
@@ -91,8 +93,8 @@
             }
         },
         "composed_parent": { 
-            "all": false, 
-            "matching_field": ["NOTA_FOLIO"],
+             "all": false, 
+             "matching_field": ["NOTA_FOLIO"],
              "fields":["NOTA_FOLIO","NOTA_FECHA"], 
              "related_table": "CANOTA" 
             },
@@ -103,6 +105,7 @@
         }
     },
     "XCORTE": {
+        "date_field":"FECHA",
         "identifier_field":"FECHA",
         "filters": {
             "date": {

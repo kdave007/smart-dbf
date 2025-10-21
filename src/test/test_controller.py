@@ -34,7 +34,14 @@ def test(table):
     client_id = config_manager.config.get('plaza') + "_" + config_manager.config.get('sucursal')
     sql_enabled = config_manager.get_sql_enabled()
     debug_mode = config_manager.get_debug_mode()
+    stop_flag = config_manager.get_stop_flag()
     
+    # Check if STOP_FLAG is enabled
+    if stop_flag: 
+        logging.warning(f"STOP_FLAG ENABLED - Process will not execute")
+        logging.warning(f"Set STOP_FLAG=0 in .env to enable processing")
+        sys.exit()
+
     controller = DBFData(
         data_source=data_source,
         venue_file_name=venue_file_name,
@@ -208,7 +215,7 @@ if __name__ == "__main__":
     print("main")
     border = "*" * 80
     spacing = "*" + " " * 78 + "*"
-    message = "*" + " " * 25 + "STARTING Smart DBF v1.0 " + " " * 25 + "*"
+    message = "*" + " " * 25 + "STARTING Smart DBF v1.12 " + " " * 25 + "*"
 
 
     logging.info(border)

@@ -25,10 +25,10 @@ class Composed:
                 composed_parent = table_config.get('composed_parent', {})
 
                 # print(f"[Composed] Found composed_parent for {table_name}: {composed_parent}")
-                return composed_parent
+                return composed_parent, table_config
         except Exception as e:
             print(f"[Composed] Error loading field_map.json: {e}")
-            return []
+            return {}, {}
     
     def _get_references(self, related_params, date_range, limit):
 
@@ -63,7 +63,7 @@ class Composed:
             TODO here i need to fetch data only by the reference matching field and then search in the actual target table 
         """
         # print(f" GET TABLE DATA FOR {table_name}")
-        related_params = self._get_composed_parent_fields(table_name)
+        related_params, table_config = self._get_composed_parent_fields(table_name)
         references = self._get_references( related_params,date_range, limit)
         matching_field = related_params.get('matching_field')
         # Handle matching_field as list or string
@@ -72,8 +72,17 @@ class Composed:
 
         # Use chunked method for better performance with large datasets
         results = self.get_by_references_chunked(references, matching_field, table_name, chunk_size=2000)
-        self._debug_match_summary(references, results, matching_field) 
-        # sys.exit()   
+        
+        # Build reference lookup map and inherit ref_date in single pass
+        ref_lookup = {}
+        for ref in references:
+            if matching_field in ref and ref[matching_field] is not None:
+                ref_value = str(ref[matching_field])
+                ref_lookup[ref_value] = ref
+        
+        # Inherit ref_date from parent to child and calculate match summary
+        self._inherit_and_summarize(results, ref_lookup, matching_field)
+      
             
         return results
 
@@ -209,54 +218,63 @@ class Composed:
         
         return all_results
 
-    def _debug_match_summary(self, references, results, matching_field):
+    def _inherit_and_summarize(self, results, ref_lookup, matching_field):
         """
-        Debug method to show how many records were found for each reference value.
+        Inherit ref_date from parent and calculate match summary in single loop.
         
         Args:
-            references: List of reference records (parent table)
-            results: List of result records (child table) 
+            results: List of child result records
+            ref_lookup: Dict mapping reference values to parent records
             matching_field: Field name to match on
-            
-        Returns:
-            Dict with reference values as keys and count of matches as values
         """
-        if not references or not results or not matching_field:
-            print("[Debug] Missing data for match summary")
-            return {}
+        if not results or not ref_lookup or not matching_field:
+            return
         
-        # Extract reference values
-        ref_values = set()
-        for ref in references:
-            if matching_field in ref and ref[matching_field] is not None:
-                ref_values.add(str(ref[matching_field]))
-        
-        # Count matches for each reference
+        inherited_count = 0
         match_counts = {}
-        for ref_value in ref_values:
-            count = sum(1 for result in results 
-                       if str(result.get(matching_field, '')) == ref_value)
-            match_counts[ref_value] = count
         
-        # Print summary
+        # Single loop: inherit ref_date and count matches
+        for result in results:
+            result_ref_value = str(result.get(matching_field, ''))
+            
+            # Find matching parent reference
+            if result_ref_value in ref_lookup:
+                parent_ref = ref_lookup[result_ref_value]
+                
+                # Count match
+                match_counts[result_ref_value] = match_counts.get(result_ref_value, 0) + 1
+                
+                # Inherit ref_date from parent if available
+                if '__meta' in parent_ref and 'ref_date' in parent_ref['__meta']:
+                    # Ensure child has __meta
+                    if '__meta' not in result:
+                        result['__meta'] = {}
+                    
+                    # Copy ref_date from parent to child
+                    result['__meta']['ref_date'] = parent_ref['__meta']['ref_date']
+                    inherited_count += 1
+        
+        # Print inheritance summary
+        if inherited_count > 0:
+            print(f"[Composed] Inherited ref_date for {inherited_count}/{len(results)} child records from parent")
+        
+        # Print match summary
         print(f"\n[Debug] Match Summary for field '{matching_field}':")
-        print(f"[Debug] Total references: {len(ref_values)}")
+        print(f"[Debug] Total references: {len(ref_lookup)}")
         print(f"[Debug] Total results: {len(results)}")
-        print("[Debug] Matches per reference:")
         
-        # for ref_value in sorted(match_counts.keys()):
-        #     count = match_counts[ref_value]
-        #     print(f"[Debug] ref {ref_value}: {count}")
-        
-        # Summary stats
         total_matches = sum(match_counts.values())
-        refs_with_matches = sum(1 for count in match_counts.values() if count > 0)
-        refs_without_matches = len(ref_values) - refs_with_matches
+        refs_with_matches = len(match_counts)
+        refs_without_matches = len(ref_lookup) - refs_with_matches
         
         print(f"[Debug] Summary: {refs_with_matches} refs with matches, {refs_without_matches} refs without matches")
         print(f"[Debug] Total matched records: {total_matches}")
         
-        return match_counts
+        # Show sample result with ref_date if available
+        if results:
+            print(f"[Debug] Sample result: {results[0]}")
+
+    
 
     def trim_references(self, references, fields):
         if not references or not fields:

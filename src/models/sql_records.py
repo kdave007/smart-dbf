@@ -19,6 +19,53 @@ class SQLRecords:
         # Initialize SQLite connection pool
         self.db_pool = SQLiteConnectionPool(self.db_path, pool_size=5)
     
+    def _format_date_to_iso(self, date_value):
+        """
+        Parse date value and format to ISO date format (YYYY-MM-DD).
+        Handles various input formats including datetime objects and strings.
+        
+        Args:
+            date_value: Date value (can be datetime, string, etc.)
+            
+        Returns:
+            Date string in YYYY-MM-DD format or None if parsing fails
+        """
+        if date_value is None:
+            return None
+        
+        try:
+            # If it's already a datetime object
+            if hasattr(date_value, 'year') and hasattr(date_value, 'month') and hasattr(date_value, 'day'):
+                return f"{date_value.year:04d}-{date_value.month:02d}-{date_value.day:02d}"
+            
+            # If it's a string, try common formats
+            if isinstance(date_value, str):
+                date_value = date_value.strip()
+                
+                # Try common date formats
+                formats = [
+                    '%d/%m/%Y',  # 19/10/2025
+                    '%m/%d/%Y',  # 10/19/2025
+                    '%Y-%m-%d',  # 2025-10-19 (already ISO)
+                    '%d-%m-%Y',  # 19-10-2025
+                    '%Y/%m/%d',  # 2025/10/19
+                ]
+                
+                for fmt in formats:
+                    try:
+                        parsed_date = datetime.strptime(date_value, fmt)
+                        return f"{parsed_date.year:04d}-{parsed_date.month:02d}-{parsed_date.day:02d}"
+                    except ValueError:
+                        continue
+            
+            # If we can't parse it, log warning and return None
+            logging.warning(f"[SQLRecords] Could not parse date value: {date_value}")
+            return None
+            
+        except Exception as e:
+            logging.warning(f"[SQLRecords] Error formatting date {date_value}: {e}")
+            return None
+    
     def batch_select_by_id(self, records, id_field_name, table_name, version, batch_size):
         """Fetch matching records in safe batches for SQLite"""
         if not records:
@@ -98,6 +145,11 @@ class SQLRecords:
             for record in records:
                 # Extract the field value from __meta
                 id_field_value = record.get('__meta', {}).get(field_id)
+                ref_date_raw = record.get('__meta', {}).get('ref_date', None)
+                
+                # Parse ref_date to ISO format (YYYY-MM-DD)
+                ref_date = self._format_date_to_iso(ref_date_raw) if ref_date_raw else None
+                
                 if id_field_value is None:
                     print(f"Warning: No {field_id} found in record __meta")
                     continue
@@ -110,11 +162,12 @@ class SQLRecords:
                         status, 
                         hash_comparador,
                         eliminado,
-                        id_cola
-                    ) VALUES (?, ?, ?, ?, ?, ?)
+                        id_cola,
+                        fecha_original
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
                 """
                 
-                params = (id_field_value, version_id, status, record['__meta']['hash_comparador'], delete_flag, waiting_id)#TODO delete flag may not be usfeul here!
+                params = (id_field_value, version_id, status, record['__meta']['hash_comparador'], delete_flag, waiting_id, ref_date)
                 conn.execute(query, params)
                 insert_count += 1
             

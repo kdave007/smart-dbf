@@ -25,6 +25,7 @@ class DBFReader:
         self.converter = DataConverter()
         self.hash_manager = HashManager()
         self.resolver = IdentifierResolver()
+        self._date_field_cache = {}  # Cache for date_field lookups
 
     def read_table(self, table_name: str, limit: Optional[int] = None, filters: Optional[List[Dict[str, Any]]] = None, include_recno: bool = True, select_fields: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         """Read records from a table with optional filters.
@@ -161,13 +162,48 @@ class DBFReader:
 
                     meta['hash_comparador'] = record_hash
 
+                    # Add ref_date if date_field is configured for this table
+                    date_field = self._get_date_field(table_name)
+                    if date_field and date_field in record:
+                        meta['ref_date'] = record[date_field]
+
                     if meta:
                         record['__meta'] = meta
 
                 results.append(record)
                 count += 1
             return results
+    
+    def _get_date_field(self, table_name: str) -> Optional[str]:
+        """
+        Get the date_field from rules.json for a given table.
+        Uses caching to avoid repeated file reads.
+        
+        Args:
+            table_name: Name of the table
             
+        Returns:
+            The date field name or None if not configured
+        """
+        # Check cache first
+        if table_name in self._date_field_cache:
+            return self._date_field_cache[table_name]
+        
+        # Load from rules.json
+        try:
+            rules_path = Path(__file__).parent.parent / "utils" / "rules.json"
+            with open(rules_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                table_config = data.get(table_name, {})
+                date_field = table_config.get('date_field', None)
+                
+                # Cache the result (even if None)
+                self._date_field_cache[table_name] = date_field
+                return date_field
+        except Exception as e:
+            logging.warning(f"[DBFReader] Could not load date_field for {table_name}: {e}")
+            self._date_field_cache[table_name] = None
+            return None
 
     def to_json(self, table_name: str, limit: Optional[int] = None, filters: Optional[List[Dict[str, Any]]] = None) -> str:
         """
