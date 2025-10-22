@@ -101,7 +101,7 @@ def test(table):
     print_dbf_records(dbf_records, field_name, 30)
     
     sql_references_manager = SQLReferences(table)
-    sql_records = sql_references_manager._get_by_batches(dbf_records)
+    sql_records = sql_references_manager._get_by_batches(dbf_records, date_range.get('from'), date_range.get('to'))
     # print(f" {sql_records}")
     # print_sql_references(sql_records, 30)
     

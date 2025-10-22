@@ -14,7 +14,7 @@ class SQLReferences:
     def set_table(self, table_name) -> None:
         self.table_name = table_name
 
-    def _get_by_batches(self, dbf_records,batch_size=500):
+    def _get_by_batches(self, dbf_records, start_date, end_date, batch_size=500):
         """by batches depending on the records lentgth, fetch from the sqlite the matching records by the specific id given field name"""
         #here i need to divide the records 
         version = self.sql_id_manager.get_batch_version()
@@ -29,7 +29,7 @@ class SQLReferences:
         for i in range(0, len(dbf_records), batch_size):
             records_batch = dbf_records[i:i + batch_size]
           
-            batch_results = self.sql_records.batch_select_by_id(records_batch, field_name, self.table_name, version, len(records_batch))
+            batch_results = self.sql_records.batch_select_by_id_and_date_range(records_batch, field_name, self.table_name, version, start_date, end_date, len(records_batch))
             all_results.update(batch_results)
         
         return all_results
