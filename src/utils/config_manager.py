@@ -33,44 +33,11 @@ class ConfigManager:
     def initialize(cls, source, venue_file_name=None):
         """Initialize the singleton instance with source and optional venue file"""
         if cls._instance is None:
-            # If no venue_file_name provided, try to read from .env
+            # If no venue_file_name provided, use standard 'venue.json'
             if venue_file_name is None:
-                venue_file_name = cls._get_venue_file_from_env()
+                venue_file_name = 'venue.json'
             cls._instance = cls(source, venue_file_name)
         return cls._instance
-    
-    @staticmethod
-    def _get_venue_file_from_env():
-        """Read VENUE_FILE_NAME from .env file - EXTERNAL ONLY"""
-        base_path = ConfigManager._get_base_path()
-        env_path = base_path / '.env'
-        
-        if not env_path.exists():
-            logging.error(f".env file not found at {env_path}")
-            raise FileNotFoundError(f".env file not found at {env_path}")
-        
-        try:
-            with open(env_path, 'r', encoding='utf-8') as file:
-                for line in file:
-                    line = line.strip()
-                    
-                    # Skip empty lines and comments
-                    if not line or line.startswith('#'):
-                        continue
-                    
-                    # Parse key=value pairs
-                    if '=' in line:
-                        key, value = line.split('=', 1)
-                        key = key.strip()
-                        value = value.strip().strip('"')  # Remove quotes if present
-                        
-                        if key == 'VENUE_FILE_NAME':
-                            logging.info(f"Venue file configured: {value}")
-                            return value
-            
-            raise ValueError("VENUE_FILE_NAME not found in .env file")
-        except Exception as e:
-            raise Exception(f"Error reading VENUE_FILE_NAME from .env: {str(e)}")
     
     def __init__(self, source, venue_file_name=None):
         self.source = source  # API or ENV
@@ -155,8 +122,13 @@ class ConfigManager:
         json_path = base_path / json_file_name
         
         if not json_path.exists():
+            error_msg = f"\n{'='*60}\nERROR: Configuration file not found!\n{'='*60}\n"
+            error_msg += f"Please provide the file: {json_file_name}\n"
+            error_msg += f"Expected location: {json_path}\n"
+            error_msg += f"{'='*60}\n"
+            print(error_msg)
             logging.error(f"JSON config file not found at {json_path}")
-            raise FileNotFoundError(f"JSON config file not found at {json_path}")
+            sys.exit(1)
         
         try:
             with open(json_path, 'r', encoding='utf-8') as file:
@@ -164,11 +136,19 @@ class ConfigManager:
                 logging.info(f"Loaded venue configuration from {json_file_name}")
                 return json_config
         except json.JSONDecodeError as e:
+            error_msg = f"\n{'='*60}\nERROR: Invalid JSON format in {json_file_name}\n{'='*60}\n"
+            error_msg += f"Details: {str(e)}\n"
+            error_msg += f"{'='*60}\n"
+            print(error_msg)
             logging.error(f"Invalid JSON format in {json_file_name}: {str(e)}")
-            raise Exception(f"Invalid JSON format in {json_file_name}: {str(e)}")
+            sys.exit(1)
         except Exception as e:
+            error_msg = f"\n{'='*60}\nERROR: Failed to read {json_file_name}\n{'='*60}\n"
+            error_msg += f"Details: {str(e)}\n"
+            error_msg += f"{'='*60}\n"
+            print(error_msg)
             logging.error(f"Error reading JSON config file {json_file_name}: {str(e)}")
-            raise Exception(f"Error reading JSON config file {json_file_name}: {str(e)}")
+            sys.exit(1)
     
     def get_combined_config(self, json_file_name: str = None) -> Dict[str, Any]:
         """Get combined configuration from .env and optional JSON file"""
@@ -233,8 +213,9 @@ class ConfigManager:
         return bool(int(self.config.get('SQL_ENABLED', 0)))
     
     def get_sqlite_path(self) -> str:
-        """Get SQLite database directory path from configuration"""
-        return self.config.get('sqlite')
+        """Get SQLite database directory path - always at base path level"""
+        base_path = self._get_base_path()
+        return str(base_path)
     
     def get_db_name(self) -> str:
         """Get database name from .env file"""
@@ -247,7 +228,7 @@ class ConfigManager:
         return db_name
     
     def get_full_db_path(self) -> str:
-        """Get full SQLite database path (directory + db_name.db)"""
+        """Get full SQLite database path (directory + db_name.db) and validate it exists"""
         sqlite_dir = self.get_sqlite_path()
         db_name = self.get_db_name()
         
@@ -255,7 +236,38 @@ class ConfigManager:
             raise ValueError("SQLite path not configured")
         
         full_path = Path(sqlite_dir) / f"{db_name}.db"
+        
+        # Check if database file exists
+        if not full_path.exists():
+            error_msg = f"\n{'='*60}\nERROR: SQLite database not found!\n{'='*60}\n"
+            error_msg += f"Database file: {db_name}.db\n"
+            error_msg += f"Expected location: {full_path}\n"
+            error_msg += f"{'='*60}\n"
+            error_msg += f"Please ensure the database file exists at the base directory.\n"
+            error_msg += f"{'='*60}\n"
+            print(error_msg)
+            logging.error(f"SQLite database not found at {full_path}")
+            sys.exit(1)
+        
         return str(full_path)
+    
+    def get_dll_path(self) -> str:
+        """Get DLL file path from base directory - EXTERNAL ONLY"""
+        dll_file_name = self.config.get('dll_file_name', 'Advantage.Data.Provider.dll')
+        base_path = self._get_base_path()
+        dll_path = base_path / dll_file_name
+        
+        if dll_path.exists():
+            logging.info(f"DLL file found at: {dll_path}")
+            return str(dll_path)
+        else:
+            error_msg = f"\n{'='*60}\nERROR: DLL file not found!\n{'='*60}\n"
+            error_msg += f"Please provide the file: {dll_file_name}\n"
+            error_msg += f"Expected location: {dll_path}\n"
+            error_msg += f"{'='*60}\n"
+            print(error_msg)
+            logging.error(f"DLL file not found at {dll_path}")
+            sys.exit(1)
     
     def get_identifier_field(self, table_name: str) -> str:
         """Get identifier field for a table from rules.json"""

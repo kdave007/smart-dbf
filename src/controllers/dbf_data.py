@@ -22,7 +22,7 @@ class DBFData:
             self.config = self.config_manager.get_combined_config(self.venue_file_name)
             
             # Set configuration parameters using ConfigManager methods
-            self.dll_path = self.config.get('dll_path')
+            self.dll_path = self.config_manager.get_dll_path()
             self.mapping_file_path = self.config_manager.get_mapping_file_path()
             self.filters_file_path = self.config_manager.get_filters_file_path()
             

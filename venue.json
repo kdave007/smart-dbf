@@ -1,9 +1,9 @@
 {
-    "sucursal":"REBSA",
+    "sucursal":"ARAUC",
     "plaza":"XALAP",
-    "testing_api_key":"O4TfvrDJNER",
+    "testing_api_key":"LWDSDxN2tH",
     "config_endpoint":"www.test.com",
-    "dll_path":"C:\\Users\\campo\\Documents\\projects\\DBF_Bridge\\Advantage.Data.Provider.dll",
-    "data_source":"C:\\Users\\campo\\Documents\\projects\\data_sucursales\\rebsa",
-    "sqlite":"C:\\Users\\campo\\Documents\\projects\\smart-dbf"
+    "dll_file_name":"Advantage.Data.Provider.dll",
+    "data_source":"C:\\Users\\campo\\Documents\\projects\\data_sucursales\\araucarias",
+
 }
