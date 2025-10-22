@@ -215,7 +215,7 @@ if __name__ == "__main__":
     print("main")
     border = "*" * 80
     spacing = "*" + " " * 78 + "*"
-    message = "*" + " " * 25 + "STARTING Smart DBF v1.12 " + " " * 25 + "*"
+    message = "*" + " " * 25 + "STARTING Smart DBF v1.13 " + " " * 25 + "*"
 
 
     logging.info(border)
@@ -233,33 +233,43 @@ if __name__ == "__main__":
     all_results[table_3] = test(table_3)
     
     # Log aggregated results for all tables
+    logging.info(f" ")
     logging.info("="*80)
     logging.info("FINAL PROCESSING RESULTS SUMMARY - ALL TABLES")
     logging.info("="*80)
     
     for table_name, results in all_results.items():
-        logging.info(f"--- TABLE: {table_name} ---")
+        logging.info(f"/// TABLE: {table_name} ///")
         
         if results['new']:
             logging.info(f"  NEW:")
             logging.info(f"    - Total records: {results['new']['total_records']}")
             logging.info(f"    - Batches: {results['new']['successful_batches']}/{results['new']['total_batches']} successful")
             logging.info(f"    - Success rate: {results['new']['success_rate']}%")
+            logging.info(f" ")
         
         if results['updated']:
             logging.info(f"  UPDATED:")
             logging.info(f"    - Total records: {results['updated']['total_records']}")
             logging.info(f"    - Batches: {results['updated']['successful_batches']}/{results['updated']['total_batches']} successful")
             logging.info(f"    - Success rate: {results['updated']['success_rate']}%")
+            logging.info(" ")
         
         if results['deleted']:
+
             logging.info(f"  DELETED:")
+
+            if table_name == 'CANOTA':
+                logging.warning("**** Deleted CANOTA records (headers) will automatically mark matching records (partitions) in CUNOTA as deleted")
+
             logging.info(f"    - Total records: {results['deleted']['total_records']}")
             logging.info(f"    - Batches: {results['deleted']['successful_batches']}/{results['deleted']['total_batches']} successful")
             logging.info(f"    - Success rate: {results['deleted']['success_rate']}%")
+            logging.info(" ")
         
         if results['unchanged']:
             logging.info(f"  UNCHANGED: {results['unchanged']} records")
+            logging.info(" ")
     
     logging.info("="*80)
     logging.info(" ALL TABLES PROCESSED ")

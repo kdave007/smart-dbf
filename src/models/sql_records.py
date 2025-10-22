@@ -184,12 +184,18 @@ class SQLRecords:
         print(f"Retrieved {len(all_records)} records from {table_name}")
         return all_records
 
-    def insert_sent_data(self, table_name, records, field_id, version, delete_flag, waiting_id, status=1):
+    def insert_sent_data(self, table_name, records, field_id, version, delete_flag, waiting_id, reference_field_name=None, status=1):
         """Generic batch insert with transaction support"""
         if not records:
             print("No records to insert")
             return False
+
+        insert_ref = False  
+        reference_value = None  
         
+        if reference_field_name != None and reference_field_name != "":
+            insert_ref = True
+
         # Extract version ID if it's a dictionary
         version_id = version.get('id') if isinstance(version, dict) else version
         
@@ -206,6 +212,10 @@ class SQLRecords:
                 id_field_value = record.get('__meta', {}).get(field_id)
                 ref_date_raw = record.get('__meta', {}).get('ref_date', None)
                 
+                # Get reference value if reference field is specified
+                if insert_ref:
+                    reference_value = record.get(reference_field_name)
+                
                 # Parse ref_date to ISO format (YYYY-MM-DD)
                 ref_date = self._format_date_to_iso(ref_date_raw) if ref_date_raw else None
                 
@@ -213,20 +223,51 @@ class SQLRecords:
                     print(f"Warning: No {field_id} found in record __meta")
                     continue
                 
-                # Generic insert query 
-                query = f"""
-                    INSERT INTO {table_name} (
-                        {field_id}, 
-                        batch_version, 
-                        status, 
-                        hash_comparador,
-                        eliminado,
-                        id_cola,
-                        fecha_original
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                """
-                
-                params = (id_field_value, version_id, status, record['__meta']['hash_comparador'], delete_flag, waiting_id, ref_date)
+                # Build query conditionally based on whether we have a reference field
+                if insert_ref:
+                    query = f"""
+                        INSERT INTO {table_name} (
+                            {field_id}, 
+                            batch_version, 
+                            status, 
+                            hash_comparador,
+                            eliminado,
+                            id_cola,
+                            fecha_original,
+                            referencia
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT({field_id}, batch_version) 
+                        DO UPDATE SET
+                            eliminado = excluded.eliminado,
+                            clave_eliminacion = CASE 
+                                WHEN clave_eliminacion IS NOT NULL THEN 'restaurado'
+                                ELSE clave_eliminacion
+                            END,
+                            ultima_revision = datetime('now')
+                    """
+                    params = (id_field_value, version_id, status, record['__meta']['hash_comparador'], delete_flag, waiting_id, ref_date, reference_value)
+                else:
+                    query = f"""
+                        INSERT INTO {table_name} (
+                            {field_id}, 
+                            batch_version, 
+                            status, 
+                            hash_comparador,
+                            eliminado,
+                            id_cola,
+                            fecha_original
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT({field_id}, batch_version) 
+                        DO UPDATE SET
+                            eliminado = excluded.eliminado,
+                            clave_eliminacion = CASE 
+                                WHEN clave_eliminacion IS NOT NULL THEN 'restaurado'
+                                ELSE clave_eliminacion
+                            END,
+                            ultima_revision = datetime('now')
+                    """
+                    params = (id_field_value, version_id, status, record['__meta']['hash_comparador'], delete_flag, waiting_id, ref_date)
+                    
                 conn.execute(query, params)
                 insert_count += 1
             
@@ -305,7 +346,68 @@ class SQLRecords:
         finally:
             # Return connection to pool
             self.db_pool.return_connection(conn)
+    
+    def delete_sent_data(self, table_name, meta_records, field_id, version, waiting_id, status=1):
+        """Mark records as deleted by setting eliminado=1"""
+        if not meta_records:
+            print("No records to delete")
+            return False
         
+        # Extract version ID if it's a dictionary
+        version_id = version.get('id') if isinstance(version, dict) else version
+        current_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        conn = self.db_pool.get_connection()
+        try:
+            # Start transaction
+            conn.execute("BEGIN TRANSACTION")
+
+            delete_count = 0
+            for record in meta_records:
+                print(f"DELETE RECORD (META) :: {record}")
+                # Extract the field value from __meta
+                id_field_value = record.get(field_id)
+                if id_field_value is None:
+                    print(f"Warning: No {field_id} found in record __meta")
+                    continue
+                
+                # # Update query to mark as deleted
+                # query = f"""
+                #     UPDATE {table_name} 
+                #     SET eliminado = 1
+                #     WHERE {field_id} = ? AND batch_version = ?
+                # """
+                # params = ( id_field_value, version_id)
+
+                query = f"""
+                    UPDATE {table_name} 
+                    SET eliminado = 1,
+                        clave_eliminacion = 'estandar',
+                        id_cola = ?,
+                        ultima_revision = ?
+                    WHERE {field_id} = ? AND batch_version = ?
+                """
+                params = (waiting_id, current_date, id_field_value, version_id)
+                conn.execute(query, params)
+                delete_count += 1
+            
+            # Commit transaction
+            conn.execute("COMMIT")
+            logging.info(f"-- Successfully marked {delete_count} records as deleted in {table_name} batch cola id: {waiting_id}")
+            return True
+                
+        except Exception as e:
+            # Rollback transaction on error
+            try:
+                conn.execute("ROLLBACK")
+                logging.error(f"-- sql records Transaction rolled back due to error: {str(e)}")
+            except Exception as rollback_error:
+                logging.error(f"-- Error during rollback: {str(rollback_error)}")
+            return False
+            
+        finally:
+            # Return connection to pool
+            self.db_pool.return_connection(conn)
 
 
 

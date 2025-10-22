@@ -256,3 +256,21 @@ class ConfigManager:
         
         full_path = Path(sqlite_dir) / f"{db_name}.db"
         return str(full_path)
+    
+    def get_identifier_field(self, table_name: str) -> str:
+        """Get identifier field for a table from rules.json"""
+        rules_file_path = self.get_filters_file_path()
+        
+        if not rules_file_path:
+            logging.error("rules.json file not found")
+            return None
+        
+        try:
+            with open(rules_file_path, 'r', encoding='utf-8') as f:
+                rules_data = json.load(f)
+                table_rules = rules_data.get(table_name, {})
+                identifier_field = table_rules.get('identifier_field')
+                return identifier_field
+        except Exception as e:
+            logging.error(f"Error loading identifier field from rules.json: {e}")
+            return None
