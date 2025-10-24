@@ -17,8 +17,11 @@ from src.controllers.data_comparator import DataComparator
 from src.controllers.sql_tracking_response import SQLTrackingResponse
 from src.utils.date_calculator import DateCalculator
 from src.utils.validate_location_client import ValidateLocationClient
+from src.controllers.status_process import StatusProcess
 
 from src.controllers.operation import Operation
+from src.utils.sql_identifiers_manager import SQLIdentifiersManager
+from src.utils.data_tables_schemas_manager import DataTablesSchemasManager
 # from src.controllers.operation_raw_og import Operation
 import logging
 # Initialize logging
@@ -26,9 +29,7 @@ import logging
 def test(table):
 
     config_manager = ConfigManager.initialize("ENV")
-    
-    
-    # Now you can access config anywhere
+
     data_source = config_manager.get_data_source()
     venue_file_name = config_manager.venue_file_name
     client_id = config_manager.config.get('plaza') + "_" + config_manager.config.get('sucursal')
@@ -49,26 +50,21 @@ def test(table):
         encryption_password="X"
     )
 
-    logging.info(f"                /////////////////////////////////////////////////////////////////////////")
-    logging.info(f"                                 [ {table} :: {client_id} ]")
-    logging.info(f"                /////////////////////////////////////////////////////////////////////////")
-
-    logging.info(f"SQL enabled: {sql_enabled}")
-    logging.info(f"Debug mode: {debug_mode}")
-
-   
     """ date format YYYY-MM-DD (API format) """
     # Get date range from .env file
     date_calc = DateCalculator()
     date_range = date_calc.get_date_range_from_env(output_format="api")
-    logging.info(f"Date range from .env: {date_range}")
-    
     dbf_records = controller.get(table, date_range)
-    logging.info(f"total dbf_records fetched for {table} : {len(dbf_records)}")
 
-    # sys.exit()
+   
+    
+    sql_id_manager = SQLIdentifiersManager()
+    data_table_schema_manager = DataTablesSchemasManager()
+    
+    schema_type = sql_id_manager.get_schema_type(table)
+    field_id = data_table_schema_manager.get_id_field_name(schema_type)
+    version = sql_id_manager.get_batch_version()
 
-    # Get field name from rules.json based on table name
     filter_manager = FilterManager(controller.filters_file_path)
     
     # Get the field configuration for this table
@@ -81,7 +77,32 @@ def test(table):
     validate_loc_params = table_rules.get('validate_location')
     reference = config_manager.config.get('sucursal')
 
-    if dbf_records and reference and validate_loc_params:
+
+    """
+        TESTING STATUS PROCESS HERE ********************
+    """
+
+    print(f"field id {field_id}")
+
+    process_1 = StatusProcess()
+    process_1._get_waiting_line(field_id, table, version, date_range)
+    sys.exit()
+
+    logging.info(f"                /////////////////////////////////////////////////////////////////////////")
+    logging.info(f"                                 [ {table} :: {client_id} ]")
+    logging.info(f"                /////////////////////////////////////////////////////////////////////////")
+
+    logging.info(f"SQL enabled: {sql_enabled}")
+    logging.info(f"Debug mode: {debug_mode}")
+    logging.info(f"Date range from .env: {date_range}")
+    logging.info(f"total dbf_records fetched for {table} : {len(dbf_records)}")
+
+    # sys.exit()
+
+    # Get field name from rules.json based on table name
+    
+
+    if debug_mode==0 and dbf_records and reference and validate_loc_params:
         from src.utils.validate_location_client import ValidateLocationClient
         validate_client = ValidateLocationClient()
         valid_result = validate_client.check(reference, dbf_records, validate_loc_params.get('field_name'), validate_loc_params.get('exceptions'))
@@ -120,15 +141,7 @@ def test(table):
     
 
     # Get schema and field_id for API operations
-    from src.utils.sql_identifiers_manager import SQLIdentifiersManager
-    from src.utils.data_tables_schemas_manager import DataTablesSchemasManager
     
-    sql_id_manager = SQLIdentifiersManager()
-    data_table_schema_manager = DataTablesSchemasManager()
-    
-    schema_type = sql_id_manager.get_schema_type(table)
-    field_id = data_table_schema_manager.get_id_field_name(schema_type)
-    version = sql_id_manager.get_batch_version()
     
     # Send operations to API endpoints
     print("\n" + "="*50)
@@ -144,10 +157,8 @@ def test(table):
     
     logging.info(f" Table {table} processing completed")
     
-    """ TODO right now the process only sends the json records and expects an ok status with
-        an array of the records processed statuses and queu id, and sets the sql db status to 2
-        and when we query the sql references, we avoid status 2 cause its been processing by the server
-        this is only for testing, we still miss the GET request to actually update the real status of 
+    """ TODO right now the process only sends the json records and expects an ok queued status with
+        queued id. we still miss the POST records status request to actually update the real status of 
         each record in the sqlite db
     """
     
@@ -205,12 +216,7 @@ def setup_logging():
 if __name__ == "__main__":
 
     setup_logging()
-
-    table_1="XCORTE"
-    table_2="CANOTA"
-    table_3="CUNOTA"
-
-    
+    tables = ["XCORTE","CANOTA","CUNOTA"]
 
     print("main")
     border = "*" * 80
@@ -228,9 +234,10 @@ if __name__ == "__main__":
     # Process all tables and collect results
     all_results = {}
     
-    all_results[table_1] = test(table_1)
-    all_results[table_2] = test(table_2)
-    all_results[table_3] = test(table_3)
+    for table in tables:
+        all_results[table] = test(table)
+
+
     
     # Log aggregated results for all tables
     logging.info(f" ")

@@ -1,9 +1,9 @@
 {
-    "sucursal":"ARAUC",
+    "sucursal":"DUMMY",
     "plaza":"XALAP",
     "testing_api_key":"LWDSDxN2tH",
     "config_endpoint":"www.test.com",
     "dll_file_name":"Advantage.Data.Provider.dll",
-    "data_source":"C:\\Users\\campo\\Documents\\projects\\data_sucursales\\araucarias",
+    "data_source":"C:\\Users\\campo\\Documents\\projects\\data_sucursales\\araucarias"
 
 }
